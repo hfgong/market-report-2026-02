@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top ETF Funds Report — Feb 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<style>
+  :root {
+    --bg:#0f1117; --card:#181b24; --border:#2a2d38;
+    --accent:#3b82f6; --accent2:#00d4aa; --red:#ff4d6a;
+    --green:#00d4aa; --yellow:#ffc107; --purple:#a78bfa;
+    --orange:#e07c24; --cyan:#22d3ee; --text:#e4e6ed; --muted:#8b8fa3;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+  .hero{background:linear-gradient(135deg,#0a1628 0%,#0f1117 50%,#1a1040 100%);padding:56px 40px;text-align:center;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 40%,rgba(59,130,246,0.08) 0%,transparent 50%),radial-gradient(circle at 70% 60%,rgba(0,212,170,0.06) 0%,transparent 50%);animation:drift 20s ease-in-out infinite}
+  @keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,10px)}}
+  .hero h1{font-size:2.6rem;font-weight:800;background:linear-gradient(135deg,#3b82f6,#00d4aa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;margin-bottom:8px}
+  .hero .subtitle{font-size:1.05rem;color:var(--muted);position:relative}
+  .hero .date-badge{display:inline-block;margin-top:16px;padding:6px 18px;border-radius:20px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);font-size:0.85rem;color:var(--accent);position:relative}
+  .container{max-width:1380px;margin:0 auto;padding:36px 24px}
+  .tabs{display:flex;gap:5px;margin-bottom:30px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .tab{padding:11px 18px;border:none;background:transparent;color:var(--muted);font-size:0.88rem;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-weight:500}
+  .tab:hover{color:var(--text)}.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .section{display:none}.section.active{display:block}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:26px;margin-bottom:22px}
+  .card h2{font-size:1.3rem;margin-bottom:16px}.card h3{font-size:1rem;margin:16px 0 10px;color:var(--accent)}
+  .chart-container{position:relative;width:100%;max-height:440px;margin:18px 0}
+  table{width:100%;border-collapse:collapse;font-size:0.84rem}
+  th{text-align:left;padding:10px 11px;border-bottom:2px solid var(--border);color:var(--muted);font-weight:600;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px}
+  td{padding:10px 11px;border-bottom:1px solid var(--border)}
+  tr:last-child td{border-bottom:none}tr:hover td{background:rgba(59,130,246,0.03)}
+  .positive{color:var(--green)}.negative{color:var(--red)}
+  .pill{display:inline-block;padding:2px 9px;border-radius:11px;font-size:0.7rem;font-weight:600}
+  .pill-broad{background:rgba(59,130,246,0.15);color:var(--accent)}
+  .pill-sector{background:rgba(167,139,250,0.15);color:var(--purple)}
+  .pill-ai{background:rgba(224,124,36,0.2);color:var(--orange)}
+  .pill-bond{background:rgba(0,212,170,0.15);color:var(--green)}
+  .pill-intl{background:rgba(34,211,238,0.15);color:var(--cyan)}
+  .pill-alt{background:rgba(255,193,7,0.15);color:var(--yellow)}
+  .pill-income{background:rgba(255,77,106,0.12);color:#ff8fa3}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:22px 0}
+  .stat-box{background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:18px;text-align:center}
+  .stat-box .number{font-size:1.8rem;font-weight:800;color:var(--accent)}
+  .stat-box.g .number{color:var(--green)}.stat-box.r .number{color:var(--red)}.stat-box.y .number{color:var(--yellow)}.stat-box.o .number{color:var(--orange)}
+  .stat-box .label{font-size:0.78rem;color:var(--muted);margin-top:4px}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+  @media(max-width:1000px){.three-col{grid-template-columns:1fr}}
+  @media(max-width:800px){.two-col{grid-template-columns:1fr}.hero h1{font-size:1.7rem}}
+  .highlight-row{background:rgba(59,130,246,0.03)!important}
+  .gold-row{background:rgba(255,193,7,0.04)!important}
+  blockquote{border-left:3px solid var(--accent);padding:12px 20px;margin:14px 0;background:rgba(59,130,246,0.04);border-radius:0 8px 8px 0;font-style:italic;color:var(--muted)}
+  blockquote strong{color:var(--text);font-style:normal}
+  .footer{text-align:center;padding:36px;color:var(--muted);font-size:0.8rem;border-top:1px solid var(--border);margin-top:36px}
+  .flow-bar{display:flex;align-items:center;gap:12px;margin:10px 0}
+  .flow-bar .lbl{min-width:110px;font-size:0.82rem;font-weight:600}
+  .flow-bar .bar{flex:1;height:14px;background:var(--border);border-radius:7px;overflow:hidden;position:relative}
+  .flow-bar .fill{height:100%;border-radius:7px;transition:width 0.8s ease}
+  .flow-bar .val{min-width:70px;text-align:right;font-weight:700;font-size:0.84rem}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Top ETF Funds Report</h1>
+  <p class="subtitle">Performance, Flows, Forward Outlook &amp; The Great Rotation of 2026</p>
+  <span class="date-badge">Data as of February 25, 2026</span>
+</div>
+
+<div class="container">
+
+<div class="tabs">
+  <button class="tab active" onclick="showSection('overview')">Overview</button>
+  <button class="tab" onclick="showSection('performance')">Performance Rankings</button>
+  <button class="tab" onclick="showSection('flows')">Flows &amp; Trends</button>
+  <button class="tab" onclick="showSection('forward')">Forward Outlook</button>
+  <button class="tab" onclick="showSection('picks')">Analyst Picks</button>
+  <button class="tab" onclick="showSection('special')">Special: Income, Crypto &amp; Buffer</button>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 1: OVERVIEW                           -->
+<!-- ============================================ -->
+<div id="overview" class="section active">
+
+  <div class="stat-row">
+    <div class="stat-box"><div class="number">$14T</div><div class="label">US ETF AUM (Jan 2026)</div></div>
+    <div class="stat-box g"><div class="number">$1.49T</div><div class="label">Record 2025 US ETF Inflows</div></div>
+    <div class="stat-box o"><div class="number">$167B</div><div class="label">Jan 2026 Inflows (Record Month)</div></div>
+    <div class="stat-box y"><div class="number">4,800+</div><div class="label">US ETFs Available</div></div>
+    <div class="stat-box"><div class="number">$19.8T</div><div class="label">Global ETF AUM</div></div>
+  </div>
+
+  <div class="card">
+    <h2>The Great Rotation of 2026</h2>
+    <p style="font-size:0.92rem;margin-bottom:16px;">
+      A historic rotation is underway in early 2026. Investors are moving <strong>away from</strong> US mega-cap tech, growth stocks, and leveraged products, and <strong>into</strong> international equities, bonds, defensive sectors, gold, and equal-weight strategies. International equity ETFs received a record <strong>$52B in January 2026 alone</strong> — outpacing US equity inflows for the first time since Feb 2023.
+    </p>
+    <div class="chart-container" style="max-height:360px;">
+      <canvas id="rotationChart"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Best Performing Categories (1-Year)</h2>
+      <div class="chart-container" style="max-height:340px;">
+        <canvas id="bestCatChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Worst Performing Categories (YTD 2026)</h2>
+      <div class="chart-container" style="max-height:340px;">
+        <canvas id="worstCatChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Master ETF Table — 36 Key Funds at a Glance</h2>
+    <div style="overflow-x:auto; max-height:700px; overflow-y:auto;">
+    <table>
+      <thead><tr><th>#</th><th>Ticker</th><th>Name</th><th>Cat.</th><th>Price</th><th>AUM</th><th>Exp.</th><th>YTD '26</th><th>1-Yr Return</th></tr></thead>
+      <tbody>
+        <tr class="gold-row"><td>1</td><td><strong>GLD</strong></td><td>SPDR Gold Shares</td><td><span class="pill pill-alt">Gold</span></td><td>$475</td><td>$175B</td><td>0.40%</td><td class="positive">+19.8%</td><td class="positive">+75.3%</td></tr>
+        <tr class="highlight-row"><td>2</td><td><strong>SMH</strong></td><td>VanEck Semiconductors</td><td><span class="pill pill-ai">Semi</span></td><td>$419</td><td>$46B</td><td>0.35%</td><td class="positive">+16.4%</td><td class="positive">+68.2%</td></tr>
+        <tr class="highlight-row"><td>3</td><td><strong>SOXX</strong></td><td>iShares Semiconductors</td><td><span class="pill pill-ai">Semi</span></td><td>$362</td><td>$23B</td><td>0.34%</td><td class="positive">+20.2%</td><td class="positive">+62.8%</td></tr>
+        <tr><td>4</td><td><strong>EEM</strong></td><td>iShares Emerging Markets</td><td><span class="pill pill-intl">Intl EM</span></td><td>$63</td><td>$28B</td><td>0.72%</td><td class="positive">+14.5%</td><td class="positive">+42.8%</td></tr>
+        <tr><td>5</td><td><strong>XLI</strong></td><td>Industrials Select SPDR</td><td><span class="pill pill-sector">Sector</span></td><td>$177</td><td>$32B</td><td>0.08%</td><td class="positive">+14.1%</td><td class="positive">+33.1%</td></tr>
+        <tr><td>6</td><td><strong>EFA</strong></td><td>iShares MSCI EAFE</td><td><span class="pill pill-intl">Intl Dev</span></td><td>$105</td><td>$77B</td><td>0.32%</td><td class="positive">+9.0%</td><td class="positive">+32.9%</td></tr>
+        <tr><td>7</td><td><strong>VWO</strong></td><td>Vanguard Emerging Markets</td><td><span class="pill pill-intl">Intl EM</span></td><td>$59</td><td>$118B</td><td>0.06%</td><td class="positive">+9.2%</td><td class="positive">+30.1%</td></tr>
+        <tr><td>8</td><td><strong>XLE</strong></td><td>Energy Select SPDR</td><td><span class="pill pill-sector">Energy</span></td><td>$55</td><td>$38B</td><td>0.08%</td><td class="positive">+23.2%</td><td class="positive">+25.2%</td></tr>
+        <tr><td>9</td><td><strong>IWM</strong></td><td>iShares Russell 2000</td><td><span class="pill pill-broad">Small Cap</span></td><td>$263</td><td>$76B</td><td>0.19%</td><td class="positive">+7.0%</td><td class="positive">+22.3%</td></tr>
+        <tr><td>10</td><td><strong>XLU</strong></td><td>Utilities Select SPDR</td><td><span class="pill pill-sector">Utilities</span></td><td>$47</td><td>$24B</td><td>0.08%</td><td class="positive">+10.6%</td><td class="positive">+21.0%</td></tr>
+        <tr><td>11</td><td><strong>AIQ</strong></td><td>Global X AI &amp; Big Data</td><td><span class="pill pill-ai">AI</span></td><td>$49</td><td>$7.5B</td><td>0.68%</td><td class="negative">-2.7%</td><td class="positive">+20.3%</td></tr>
+        <tr><td>12</td><td><strong>XLK</strong></td><td>Technology Select SPDR</td><td><span class="pill pill-sector">Tech</span></td><td>$140</td><td>$89B</td><td>0.08%</td><td class="negative">-2.5%</td><td class="positive">+20.2%</td></tr>
+        <tr><td>13</td><td><strong>ARKK</strong></td><td>ARK Innovation</td><td><span class="pill pill-ai">Disrupt</span></td><td>$72</td><td>$6.2B</td><td>0.75%</td><td class="negative">-6.3%</td><td class="positive">+19.7%</td></tr>
+        <tr><td>14</td><td><strong>BOTZ</strong></td><td>Global X Robotics &amp; AI</td><td><span class="pill pill-ai">AI/Robot</span></td><td>$39</td><td>$3.5B</td><td>0.68%</td><td class="positive">+7.7%</td><td class="positive">+16.8%</td></tr>
+        <tr><td>15</td><td><strong>QQQ</strong></td><td>Invesco Nasdaq 100</td><td><span class="pill pill-broad">Large Cap</span></td><td>$608</td><td>$400B</td><td>0.20%</td><td class="negative">-1.1%</td><td class="positive">+16.1%</td></tr>
+        <tr><td>16</td><td><strong>VTI</strong></td><td>Vanguard Total Stock Market</td><td><span class="pill pill-broad">Total Mkt</span></td><td>$339</td><td>$588B</td><td>0.03%</td><td class="positive">+1.2%</td><td class="positive">+16.0%</td></tr>
+        <tr><td>17</td><td><strong>VOO</strong></td><td>Vanguard S&amp;P 500</td><td><span class="pill pill-broad">Large Cap</span></td><td>$632</td><td>$872B</td><td>0.03%</td><td class="positive">+0.8%</td><td class="positive">+16.0%</td></tr>
+        <tr><td>18</td><td><strong>SPY</strong></td><td>SPDR S&amp;P 500</td><td><span class="pill pill-broad">Large Cap</span></td><td>$687</td><td>$701B</td><td>0.09%</td><td class="positive">+0.8%</td><td class="positive">+15.9%</td></tr>
+        <tr><td>19</td><td><strong>DIA</strong></td><td>SPDR Dow Jones</td><td><span class="pill pill-broad">Large Cap</span></td><td>$492</td><td>$44B</td><td>0.16%</td><td class="positive">+2.5%</td><td class="positive">+15.0%</td></tr>
+        <tr><td>20</td><td><strong>XLC</strong></td><td>Comm Services SPDR</td><td><span class="pill pill-sector">CommSvc</span></td><td>$116</td><td>$26B</td><td>0.08%</td><td class="negative">-1.3%</td><td class="positive">+14.1%</td></tr>
+        <tr><td>21</td><td><strong>XLP</strong></td><td>Consumer Staples SPDR</td><td><span class="pill pill-sector">Staples</span></td><td>$90</td><td>$17B</td><td>0.08%</td><td class="positive">+15.5%</td><td class="positive">+12.2%</td></tr>
+        <tr><td>22</td><td><strong>XLV</strong></td><td>Healthcare Select SPDR</td><td><span class="pill pill-sector">Health</span></td><td>$158</td><td>$42B</td><td>0.08%</td><td class="positive">+2.0%</td><td class="positive">+9.7%</td></tr>
+        <tr><td>23</td><td><strong>XLY</strong></td><td>Consumer Disc. SPDR</td><td><span class="pill pill-sector">ConsDisc</span></td><td>$117</td><td>$23B</td><td>0.08%</td><td class="negative">-2.2%</td><td class="positive">+7.8%</td></tr>
+        <tr><td>24</td><td><strong>HYG</strong></td><td>iShares High Yield Corp</td><td><span class="pill pill-bond">HY Bond</span></td><td>$81</td><td>$17B</td><td>0.49%</td><td class="positive">+0.7%</td><td class="positive">+7.5%</td></tr>
+        <tr><td>25</td><td><strong>AGG</strong></td><td>iShares Agg Bond</td><td><span class="pill pill-bond">Bond</span></td><td>$101</td><td>$140B</td><td>0.03%</td><td class="positive">+1.5%</td><td class="positive">+7.3%</td></tr>
+        <tr><td>26</td><td><strong>USO</strong></td><td>United States Oil Fund</td><td><span class="pill pill-alt">Oil</span></td><td>$81</td><td>$1.2B</td><td>0.60%</td><td class="positive">+16.8%</td><td class="positive">+7.2%</td></tr>
+        <tr><td>27</td><td><strong>XLRE</strong></td><td>Real Estate SPDR</td><td><span class="pill pill-sector">REITs</span></td><td>$44</td><td>$7.7B</td><td>0.08%</td><td class="positive">+8.4%</td><td class="positive">+7.1%</td></tr>
+        <tr><td>28</td><td><strong>BND</strong></td><td>Vanguard Total Bond</td><td><span class="pill pill-bond">Bond</span></td><td>$75</td><td>$152B</td><td>0.03%</td><td class="positive">+1.5%</td><td class="positive">+7.1%</td></tr>
+        <tr><td>29</td><td><strong>INDA</strong></td><td>iShares India</td><td><span class="pill pill-intl">India</span></td><td>$53</td><td>$9.4B</td><td>0.61%</td><td class="negative">-2.6%</td><td class="positive">+6.8%</td></tr>
+        <tr><td>30</td><td><strong>TLT</strong></td><td>iShares 20+ Yr Treasury</td><td><span class="pill pill-bond">LT Bond</span></td><td>$90</td><td>$45B</td><td>0.15%</td><td class="positive">+3.5%</td><td class="positive">+4.8%</td></tr>
+        <tr><td>31</td><td><strong>XLF</strong></td><td>Financials Select SPDR</td><td><span class="pill pill-sector">Financials</span></td><td>$51</td><td>$52B</td><td>0.08%</td><td class="negative">-6.9%</td><td class="positive">+1.9%</td></tr>
+        <tr><td>32</td><td><strong>KWEB</strong></td><td>KraneShares China Internet</td><td><span class="pill pill-intl">China</span></td><td>$32</td><td>$7.2B</td><td>0.70%</td><td class="negative">-5.3%</td><td class="negative">-6.6%</td></tr>
+        <tr><td>33</td><td><strong>HACK</strong></td><td>Amplify Cybersecurity</td><td><span class="pill pill-ai">Cyber</span></td><td>$71</td><td>$1.7B</td><td>0.60%</td><td class="negative">-11.4%</td><td class="negative">-9.1%</td></tr>
+        <tr><td>34</td><td><strong>IGV</strong></td><td>iShares Software</td><td><span class="pill pill-ai">Software</span></td><td>$78</td><td>$7.9B</td><td>0.39%</td><td class="negative">-25.8%</td><td class="negative">-21.9%</td></tr>
+        <tr><td>35</td><td><strong>WCLD</strong></td><td>WisdomTree Cloud Computing</td><td><span class="pill pill-ai">Cloud</span></td><td>$26</td><td>$197M</td><td>0.45%</td><td class="negative">-25.4%</td><td class="negative">-30.9%</td></tr>
+        <tr><td>36</td><td><strong>IBIT</strong></td><td>iShares Bitcoin Trust</td><td><span class="pill pill-alt">Crypto</span></td><td>$37</td><td>$51B</td><td>0.25%</td><td class="negative">~-20%</td><td class="negative">~-10%</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 2: PERFORMANCE RANKINGS               -->
+<!-- ============================================ -->
+<div id="performance" class="section">
+
+  <div class="card">
+    <h2>1-Year Returns — All 36 ETFs Ranked</h2>
+    <div class="chart-container" style="max-height:520px;">
+      <canvas id="oneYearChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>YTD 2026 Returns — Sector Rotation in Action</h2>
+    <div class="chart-container" style="max-height:500px;">
+      <canvas id="ytdChart"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>S&amp;P 500 Sector ETFs — YTD 2026</h2>
+      <div class="chart-container" style="max-height:360px;">
+        <canvas id="sectorRankChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h2>The AI ETF Bifurcation</h2>
+      <p style="font-size:0.9rem;margin-bottom:12px;">Within tech/AI ETFs, hardware and semiconductors are surging while software/cloud is collapsing — the clearest illustration of the AI trade's evolution.</p>
+      <div class="chart-container" style="max-height:320px;">
+        <canvas id="aiBifurcChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Market Cap Comparison — AUM of Top ETFs</h2>
+    <div class="chart-container" style="max-height:380px;">
+      <canvas id="aumChart"></canvas>
+    </div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-top:10px;text-align:center;">
+      VOO ($872B) has surpassed SPY ($701B) to become the world's largest ETF. VOO is on track to become the <strong>first trillion-dollar ETF</strong> in 2026.
+    </p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 3: FLOWS & TRENDS                     -->
+<!-- ============================================ -->
+<div id="flows" class="section">
+
+  <div class="card">
+    <h2>Record 2025: $1.49 Trillion in US ETF Inflows</h2>
+    <div class="stat-row">
+      <div class="stat-box g"><div class="number">$917B</div><div class="label">Equity ETF Inflows</div></div>
+      <div class="stat-box"><div class="number">$437B</div><div class="label">Bond ETF Inflows (+45% YoY)</div></div>
+      <div class="stat-box y"><div class="number">$58B</div><div class="label">Commodity Inflows (44x 2024!)</div></div>
+      <div class="stat-box o"><div class="number">1,167</div><div class="label">New ETFs Launched</div></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Top 10 ETFs by 2025 Inflows</h2>
+      <table>
+        <thead><tr><th>#</th><th>Ticker</th><th>2025 Inflows</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr class="highlight-row"><td>1</td><td><strong>VOO</strong></td><td class="positive">$137.7B</td><td>Largest annual ETF inflow EVER</td></tr>
+          <tr><td>2</td><td><strong>IVV</strong></td><td class="positive">$73.0B</td><td>World's 2nd largest ETF</td></tr>
+          <tr><td>3</td><td><strong>VTI</strong></td><td class="positive">$39.0B</td><td>Total stock market</td></tr>
+          <tr><td>4</td><td><strong>SGOV</strong></td><td class="positive">$38.9B</td><td>25 straight months of inflows</td></tr>
+          <tr><td>5</td><td><strong>IBIT</strong></td><td class="positive">$25.1B</td><td>Despite negative returns!</td></tr>
+          <tr><td>6</td><td><strong>VXUS</strong></td><td class="positive">$23.2B</td><td>International rotation</td></tr>
+          <tr><td>7</td><td><strong>QQQ</strong></td><td class="positive">$21.7B</td><td>Nasdaq 100</td></tr>
+          <tr><td>8</td><td><strong>BND</strong></td><td class="positive">$21.4B</td><td>Total bond market</td></tr>
+          <tr><td>9</td><td><strong>IEMG</strong></td><td class="positive">$10.0B+</td><td>Emerging markets</td></tr>
+          <tr><td>10</td><td><strong>AVEM</strong></td><td class="positive">$6.1B</td><td>Active EM fund</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Biggest ETF Outflows (2025)</h2>
+      <table>
+        <thead><tr><th>Ticker</th><th>Outflows</th><th>Reason</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SPY</strong></td><td class="negative">-$9.2B</td><td>Migration to cheaper VOO/IVV</td></tr>
+          <tr><td><strong>SOXL</strong></td><td class="negative">-$8.4B</td><td>Profit-taking after semi rally</td></tr>
+          <tr><td><strong>XLE</strong></td><td class="negative">-$8.1B</td><td>Oil price decline</td></tr>
+          <tr><td><strong>COWZ</strong></td><td class="negative">-$7.9B</td><td>Underperformed (6.5% return)</td></tr>
+          <tr><td><strong>QUAL</strong></td><td class="negative">-$7.2B</td><td>Only 11.5% return</td></tr>
+          <tr><td><strong>GBTC</strong></td><td class="negative">-$3.7B</td><td>Conversion to IBIT</td></tr>
+        </tbody>
+      </table>
+      <h2 style="margin-top:22px;">January 2026 Record Flows</h2>
+      <div class="flow-bar">
+        <div class="lbl">Intl Equity</div>
+        <div class="bar"><div class="fill" style="width:85%;background:linear-gradient(90deg,var(--cyan),var(--accent))"></div></div>
+        <div class="val" style="color:var(--cyan)">$52B</div>
+      </div>
+      <div class="flow-bar">
+        <div class="lbl">Bonds</div>
+        <div class="bar"><div class="fill" style="width:75%;background:linear-gradient(90deg,var(--green),var(--accent))"></div></div>
+        <div class="val" style="color:var(--green)">$46B</div>
+      </div>
+      <div class="flow-bar">
+        <div class="lbl">Active ETFs</div>
+        <div class="bar"><div class="fill" style="width:65%;background:linear-gradient(90deg,var(--purple),var(--accent))"></div></div>
+        <div class="val" style="color:var(--purple)">$65B</div>
+      </div>
+      <div class="flow-bar">
+        <div class="lbl">US Equity</div>
+        <div class="bar"><div class="fill" style="width:35%;background:linear-gradient(90deg,var(--accent),var(--muted))"></div></div>
+        <div class="val">$21B</div>
+      </div>
+      <div class="flow-bar">
+        <div class="lbl">Leveraged</div>
+        <div class="bar"><div class="fill" style="width:12%;background:var(--red)"></div></div>
+        <div class="val" style="color:var(--red)">-$7B</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Flow Category Breakdown (2025)</h2>
+    <div class="chart-container" style="max-height:380px;">
+      <canvas id="flowPieChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>ETF Industry Milestones</h2>
+    <div class="three-col">
+      <div class="stat-box"><div class="number">$872B</div><div class="label">VOO AUM — World's Largest ETF</div></div>
+      <div class="stat-box g"><div class="number">962</div><div class="label">Active ETFs Launched in 2025</div></div>
+      <div class="stat-box y"><div class="number">85%</div><div class="label">Of New 2026 Launches Are Active</div></div>
+      <div class="stat-box o"><div class="number">377</div><div class="label">Single-Stock ETFs (276 new in '25)</div></div>
+      <div class="stat-box"><div class="number">$78B</div><div class="label">Buffer ETF AUM (+39% CAGR)</div></div>
+      <div class="stat-box g"><div class="number">0.02%</div><div class="label">SPLG Expense Ratio (Cheapest S&amp;P)</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 4: FORWARD OUTLOOK                    -->
+<!-- ============================================ -->
+<div id="forward" class="section">
+
+  <div class="card">
+    <h2>Wall Street S&amp;P 500 Year-End 2026 Targets</h2>
+    <div class="chart-container" style="max-height:360px;">
+      <canvas id="spTargetChart"></canvas>
+    </div>
+    <p style="font-size:0.85rem;color:var(--muted);text-align:center;margin-top:10px;">
+      S&amp;P 500 current: ~6,860 | Consensus avg upside: <strong>+10.2%</strong> | Most bullish: Oppenheimer at 8,100
+    </p>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Expected Asset Class Returns for 2026</h2>
+      <table>
+        <thead><tr><th>Asset Class</th><th>Expected Return</th><th>Key Driver</th></tr></thead>
+        <tbody>
+          <tr><td>US Large Cap (S&amp;P 500)</td><td class="positive">+9-11%</td><td>Earnings growth 15%</td></tr>
+          <tr><td>Global Equities</td><td class="positive">+11%</td><td>Goldman Sachs 12-mo</td></tr>
+          <tr><td>US Small Caps</td><td class="positive">+12-15%</td><td>Earnings growth 30-35%</td></tr>
+          <tr><td>European Equities</td><td class="positive">+7.5%</td><td>Valuation + dividends</td></tr>
+          <tr><td>Emerging Markets</td><td class="positive">+10-15%</td><td>Selective (India, Vietnam)</td></tr>
+          <tr><td>IG Bonds</td><td class="positive">+4-5.5%</td><td>Coupon income</td></tr>
+          <tr><td>Gold/Precious Metals</td><td class="positive">Positive</td><td>Central bank buying</td></tr>
+          <tr><td>Semiconductors</td><td class="positive">+15-25%</td><td>$1T global sales milestone</td></tr>
+          <tr><td>Cloud/SaaS Software</td><td class="negative">Uncertain</td><td>SaaSpocalypse risk</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Key Risk Factors</h2>
+      <ul style="font-size:0.9rem;line-height:2;padding-left:18px;">
+        <li style="color:var(--red)"><strong>AI Bubble:</strong> 57% of investors say an AI crash is #1 market risk in 2026</li>
+        <li style="color:var(--red)"><strong>Concentration:</strong> Top 5 stocks = 30% of S&amp;P 500 (most since dot-com)</li>
+        <li style="color:var(--yellow)"><strong>Geopolitical:</strong> 43% of investors cite geopolitical risk as top concern</li>
+        <li style="color:var(--yellow)"><strong>SaaS Disruption:</strong> AI agents destroying per-seat model ($2T erased)</li>
+        <li><strong>Fed Policy:</strong> Only 1 more cut expected; coupon income vs. price appreciation</li>
+        <li><strong>Trade War:</strong> Tariff uncertainty, China rare earth dominance</li>
+        <li><strong>Valuation:</strong> S&amp;P 500 at 24x forward P/E vs. 18x for small caps</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Sector Rotation Themes for 2026</h2>
+    <div class="chart-container" style="max-height:360px;">
+      <canvas id="rotationThemeChart"></canvas>
+    </div>
+    <p style="font-size:0.88rem;margin-top:14px;">
+      <strong>The shift is clear:</strong> Small-cap value (+5.9% YTD) is outpacing large-cap growth (+0.1% YTD). As rate cuts continue and the yield curve steepens, cyclical sectors and small caps benefit from lower debt costs. The Magnificent 7's dominance is cracking — the broadening has arrived.
+    </p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 5: ANALYST PICKS                      -->
+<!-- ============================================ -->
+<div id="picks" class="section">
+
+  <div class="card">
+    <h2>ETF Recommendations by Category — 2026</h2>
+  </div>
+
+  <div class="three-col">
+    <div class="card">
+      <h3>Core US Equity</h3>
+      <table>
+        <thead><tr><th>ETF</th><th>Exp.</th><th>AUM</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><strong>VOO</strong></td><td>0.03%</td><td>$872B</td><td>World's largest; path to $1T</td></tr>
+          <tr><td><strong>SPLG</strong></td><td>0.02%</td><td>$90B</td><td>Cheapest S&amp;P 500 ETF</td></tr>
+          <tr><td><strong>VTI</strong></td><td>0.03%</td><td>$588B</td><td>Total US market (3,500 stocks)</td></tr>
+          <tr><td><strong>RSP</strong></td><td>0.20%</td><td>$70B</td><td>Equal-weight S&amp;P; anti-concentration</td></tr>
+          <tr><td><strong>IWM</strong></td><td>0.19%</td><td>$76B</td><td>Small-cap rotation beneficiary</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>International Equity</h3>
+      <table>
+        <thead><tr><th>ETF</th><th>Exp.</th><th>Focus</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><strong>VXUS</strong></td><td>0.07%</td><td>8,600 stocks</td><td>Broadest intl; +29% in '25</td></tr>
+          <tr><td><strong>VGK</strong></td><td>0.08%</td><td>Europe</td><td>Defense spending boom</td></tr>
+          <tr><td><strong>EZU</strong></td><td>0.09%</td><td>Eurozone</td><td>+20% 6-mo; rearmament catalyst</td></tr>
+          <tr><td><strong>IEMG</strong></td><td>0.09%</td><td>Broad EM</td><td>+48% 1-yr; record inflows</td></tr>
+          <tr><td><strong>VWO</strong></td><td>0.06%</td><td>EM (low cost)</td><td>$118B AUM; 0.06% exp</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>AI &amp; Semiconductors</h3>
+      <table>
+        <thead><tr><th>ETF</th><th>Exp.</th><th>Focus</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SMH</strong></td><td>0.35%</td><td>Top 25 semis</td><td>+68% 1-yr; NVDA, TSM, AVGO</td></tr>
+          <tr><td><strong>SOXX</strong></td><td>0.34%</td><td>30 US semis</td><td>+63% 1-yr; more diversified</td></tr>
+          <tr><td><strong>AIQ</strong></td><td>0.68%</td><td>Broad AI</td><td>$7.5B AUM; largest AI ETF</td></tr>
+          <tr><td><strong>BOTZ</strong></td><td>0.68%</td><td>Robotics + AI</td><td>Hardware-focused; NVDA, ABB</td></tr>
+          <tr><td><strong>FTXL</strong></td><td>0.60%</td><td>Nasdaq semis</td><td>$1T semi industry play</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Bonds &amp; Fixed Income</h3>
+      <table>
+        <thead><tr><th>ETF</th><th>Exp.</th><th>Yield</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><strong>AGG/BND</strong></td><td>0.03%</td><td>~4%</td><td>Core bond; record inflows</td></tr>
+          <tr><td><strong>SGOV</strong></td><td>0.09%</td><td>~4.3%</td><td>Ultra-short; path to $100B AUM</td></tr>
+          <tr><td><strong>IEI</strong></td><td>0.15%</td><td>~3.8%</td><td>"Belly of the curve"</td></tr>
+          <tr><td><strong>HYG</strong></td><td>0.49%</td><td>5.75%</td><td>High yield; risk-on income</td></tr>
+          <tr><td><strong>BNDX</strong></td><td>0.07%</td><td>3.16%</td><td>Intl bonds; 6,500 holdings</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Income &amp; Dividends</h3>
+      <table>
+        <thead><tr><th>ETF</th><th>Exp.</th><th>Yield</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SCHD</strong></td><td>0.06%</td><td>3.5%</td><td>Div growth; beating S&amp;P in '26</td></tr>
+          <tr><td><strong>JEPI</strong></td><td>0.35%</td><td>~8.1%</td><td>$44B AUM; covered call income</td></tr>
+          <tr><td><strong>JEPQ</strong></td><td>0.35%</td><td>~11.4%</td><td>Nasdaq covered call; $33B AUM</td></tr>
+          <tr><td><strong>VIG</strong></td><td>0.05%</td><td>1.6%</td><td>Dividend appreciation (growth)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Alternatives &amp; Defensive</h3>
+      <table>
+        <thead><tr><th>ETF</th><th>Exp.</th><th>1-Yr</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><strong>GLD</strong></td><td>0.40%</td><td class="positive">+75%</td><td>Best performer; central bank buying</td></tr>
+          <tr><td><strong>XLU</strong></td><td>0.08%</td><td class="positive">+21%</td><td>Defensive + AI power demand</td></tr>
+          <tr><td><strong>XLP</strong></td><td>0.08%</td><td class="positive">+12%</td><td>Staples rotation; +15.5% YTD</td></tr>
+          <tr><td><strong>GRID</strong></td><td>0.68%</td><td class="positive">+30%</td><td>Smart grid; AI data center power</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 6: INCOME, CRYPTO & BUFFER            -->
+<!-- ============================================ -->
+<div id="special" class="section">
+
+  <div class="card">
+    <h2>Covered Call / Options Income ETFs</h2>
+    <p style="font-size:0.9rem;margin-bottom:16px;">
+      Options-based ETFs attracted a record <strong>$65 billion</strong> in 2025. JEPI is the largest actively managed ETF in the US at $44B AUM.
+    </p>
+    <table>
+      <thead><tr><th>ETF</th><th>AUM</th><th>Exp.</th><th>30-Day Yield</th><th>2025 Return</th><th>Since Inception</th><th>Strategy</th></tr></thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>JEPI</strong></td><td>$44B</td><td>0.35%</td><td>~8.1%</td><td>+7.7%</td><td>+85% (May 2020)</td><td>S&amp;P 500 + ELNs</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>JEPQ</strong></td><td>$33B</td><td>0.35%</td><td>~11.4%</td><td>+15.6%</td><td>+75% (May 2022)</td><td>Nasdaq 100 + ELNs</td>
+        </tr>
+        <tr>
+          <td><strong>QYLD</strong></td><td>$8B</td><td>0.60%</td><td>~11%</td><td>Lagged</td><td>--</td><td>Nasdaq covered call</td>
+        </tr>
+        <tr>
+          <td><strong>XYLD</strong></td><td>$3B</td><td>0.60%</td><td>~10%</td><td>Lagged</td><td>--</td><td>S&amp;P 500 covered call</td>
+        </tr>
+      </tbody>
+    </table>
+    <blockquote>
+      JEPI provides <strong>monthly income</strong> with downside protection but caps upside. It returned +85% since inception vs. VOO's +151%. Best for income-seekers, not growth investors.
+    </blockquote>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Crypto ETFs — Bitcoin &amp; Ethereum</h2>
+      <table>
+        <thead><tr><th>Metric</th><th>Bitcoin ETFs</th><th>Ethereum ETFs</th></tr></thead>
+        <tbody>
+          <tr><td>Total Net Assets</td><td>$83.6B</td><td>$11.1B</td></tr>
+          <tr><td>% of Crypto Market Cap</td><td>6.3%</td><td>4.8%</td></tr>
+          <tr><td>2025 Net Inflows</td><td>~$34B</td><td>~$9.9B</td></tr>
+          <tr><td>Market Leader</td><td>IBIT (96% of volume)</td><td>ETHA (84% of volume)</td></tr>
+        </tbody>
+      </table>
+      <h3>IBIT (iShares Bitcoin Trust)</h3>
+      <ul style="font-size:0.88rem;line-height:1.8;padding-left:16px;">
+        <li>Price: ~$37 | AUM: ~$51B (down from $99.4B peak)</li>
+        <li>2025: $25.1B inflows despite -9.6% return</li>
+        <li>52-week range: $35 - $72</li>
+        <li>$244.5M annual revenue for BlackRock</li>
+        <li>Solana ETFs gaining traction as investors rotate</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Buffer / Defined Outcome ETFs</h2>
+      <div class="stat-row" style="grid-template-columns:1fr 1fr;">
+        <div class="stat-box"><div class="number">$78B</div><div class="label">Total Buffer ETF AUM</div></div>
+        <div class="stat-box g"><div class="number">420</div><div class="label">Available Buffer Funds</div></div>
+      </div>
+      <ul style="font-size:0.9rem;line-height:1.9;padding-left:16px;">
+        <li>39% average annualized organic growth rate over 3 years</li>
+        <li>CFRA expects AUM to reach <strong>$250B by 2030</strong></li>
+        <li>$15-20B in annual net inflows expected</li>
+        <li>Catalyst: $7T+ in money markets may rotate into buffer strategies as rates fall</li>
+        <li>Key providers: Innovator, First Trust, AllianzIM</li>
+        <li>Appeal: downside protection + partial upside participation</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Dividend ETF Comparison</h2>
+      <div class="chart-container" style="max-height:320px;">
+        <canvas id="divChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Active vs. Passive ETFs — The Great Shift</h2>
+      <div class="chart-container" style="max-height:320px;">
+        <canvas id="activePassiveChart"></canvas>
+      </div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-top:8px;">
+        Active ETFs now outnumber passive ETFs by count. They captured <strong>40% of January 2026 flows</strong> despite holding only ~11% of total AUM. SEC approval of ETF share classes will further accelerate this trend.
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>QQQ vs. QQQM vs. RSP vs. MAGS — The Index Debate</h2>
+    <table>
+      <thead><tr><th>ETF</th><th>Strategy</th><th>Exp.</th><th>1-Yr Return</th><th>YTD '26</th><th>Div Yield</th><th>Best For</th></tr></thead>
+      <tbody>
+        <tr><td><strong>QQQ</strong></td><td>Nasdaq 100 Cap-Weight</td><td>0.20%</td><td class="positive">+16.1%</td><td class="negative">-1.1%</td><td>~0.6%</td><td>Active traders (liquidity)</td></tr>
+        <tr><td><strong>QQQM</strong></td><td>Nasdaq 100 Cap-Weight</td><td>0.15%</td><td class="positive">+16.2%</td><td class="negative">-1.0%</td><td>~0.6%</td><td>Long-term buy &amp; hold</td></tr>
+        <tr><td><strong>RSP</strong></td><td>S&amp;P 500 Equal-Weight</td><td>0.20%</td><td class="positive">+14%</td><td class="positive">+3.7%</td><td>~1.6%</td><td>Anti-concentration</td></tr>
+        <tr><td><strong>MAGS</strong></td><td>Mag 7 Equal-Weight</td><td>0.29%</td><td class="positive">+23%</td><td class="positive">+0.3%</td><td>--</td><td>Pure Mag 7 exposure</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:0.88rem;margin-top:12px;">
+      <strong>RSP is making a comeback</strong> in 2026 as investors rotate away from mega-cap concentration. Equal-weight strategies benefit when the market broadens — and the broadening has arrived. QQQM offers a 5bps fee advantage over QQQ for long-term holders.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>ETF Provider Market Share (Global)</h2>
+    <div class="chart-container" style="max-height:320px;">
+      <canvas id="providerChart"></canvas>
+    </div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-top:8px;text-align:center;">
+      Vanguard ($4.25T) is rapidly closing the gap with iShares ($5.56T). Vanguard surpassed BlackRock in US equity ETF market share (30.1% vs 29.4%). 964 other providers split the remaining 40%.
+    </p>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  Top ETF Funds Report &bull; Generated February 25, 2026 &bull; Data sourced from ETF.com, Morningstar, StockAnalysis, FactSet, and financial news.<br>
+  This report is for informational purposes only and does not constitute investment advice.
+</div>
+
+<script>
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+const C={accent:'#3b82f6',green:'#00d4aa',red:'#ff4d6a',yellow:'#ffc107',purple:'#a78bfa',orange:'#e07c24',cyan:'#22d3ee',muted:'#8b8fa3',border:'#2a2d38',text:'#e4e6ed'};
+
+// 1. Rotation Chart
+new Chart(document.getElementById('rotationChart'),{
+  type:'bar',
+  data:{
+    labels:['Intl Equity','Bonds','Cyclical Sectors','Emerging Mkts','US Equity','Leveraged'],
+    datasets:[{
+      label:'Jan 2026 Net Flows ($B)',
+      data:[52,46,19,21,21,-7],
+      backgroundColor:[52,46,19,21,21,-7].map(v=>v>=0?'rgba(0,212,170,0.5)':'rgba(255,77,106,0.5)'),
+      borderRadius:6,borderSkipped:false
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:C.border},ticks:{color:C.muted,callback:v=>'$'+v+'B'}},x:{grid:{display:false},ticks:{color:C.text,font:{size:11}}}}}
+});
+
+// 2. Best Categories 1-Yr
+new Chart(document.getElementById('bestCatChart'),{
+  type:'bar',
+  data:{
+    labels:['Gold (GLD)','Semis (SMH)','Semis (SOXX)','EM (EEM)','Industrials','Intl Dev (EFA)','EM (VWO)','Energy (XLE)','Small Cap (IWM)'],
+    datasets:[{label:'1-Year Return (%)',data:[75.3,68.2,62.8,42.8,33.1,32.9,30.1,25.2,22.3],backgroundColor:'rgba(0,212,170,0.45)',borderRadius:5}]
+  },
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:C.border},ticks:{color:C.muted,callback:v=>v+'%'}},y:{grid:{display:false},ticks:{color:C.text,font:{size:10}}}}}
+});
+
+// 3. Worst Categories YTD
+new Chart(document.getElementById('worstCatChart'),{
+  type:'bar',
+  data:{
+    labels:['Cloud (WCLD)','Software (IGV)','Cyber (HACK)','ARKK','Financials','China (KWEB)','Crypto (IBIT)'],
+    datasets:[{label:'YTD 2026 (%)',data:[-25.4,-25.8,-11.4,-6.3,-6.9,-5.3,-20],backgroundColor:'rgba(255,77,106,0.45)',borderRadius:5}]
+  },
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:C.border},ticks:{color:C.muted,callback:v=>v+'%'}},y:{grid:{display:false},ticks:{color:C.text,font:{size:10}}}}}
+});
+
+// 4. 1-Year All ETFs
+new Chart(document.getElementById('oneYearChart'),{
+  type:'bar',
+  data:{
+    labels:['GLD','SMH','SOXX','EEM','XLI','EFA','VWO','XLE','IWM','XLU','AIQ','XLK','ARKK','BOTZ','QQQ','VTI','VOO','SPY','DIA','XLC','XLP','XLV','XLY','HYG','AGG','USO','XLRE','BND','INDA','TLT','XLF','KWEB','HACK','IGV','WCLD'],
+    datasets:[{
+      label:'1-Year Return (%)',
+      data:[75.3,68.2,62.8,42.8,33.1,32.9,30.1,25.2,22.3,21.0,20.3,20.2,19.7,16.8,16.1,16.0,16.0,15.9,15.0,14.1,12.2,9.7,7.8,7.5,7.3,7.2,7.1,7.1,6.8,4.8,1.9,-6.6,-9.1,-21.9,-30.9],
+      backgroundColor: [75.3,68.2,62.8,42.8,33.1,32.9,30.1,25.2,22.3,21.0,20.3,20.2,19.7,16.8,16.1,16.0,16.0,15.9,15.0,14.1,12.2,9.7,7.8,7.5,7.3,7.2,7.1,7.1,6.8,4.8,1.9,-6.6,-9.1,-21.9,-30.9].map(v=>v>=20?'rgba(0,212,170,0.55)':v>=0?'rgba(59,130,246,0.4)':'rgba(255,77,106,0.5)'),
+      borderRadius:4,borderSkipped:false
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y+'%'}}},scales:{y:{grid:{color:C.border},ticks:{color:C.muted,callback:v=>v+'%'}},x:{grid:{display:false},ticks:{color:C.text,font:{size:8,weight:'bold'},maxRotation:90,minRotation:45}}}}
+});
+
+// 5. YTD 2026
+new Chart(document.getElementById('ytdChart'),{
+  type:'bar',
+  data:{
+    labels:['XLE','SOXX','GLD','USO','SMH','XLP','XLI','XLU','EEM','VWO','EFA','XLRE','BOTZ','IWM','TLT','DIA','XLV','AGG','BND','VTI','VOO','SPY','HYG','QQQ','XLC','XLY','XLK','INDA','AIQ','KWEB','ARKK','XLF','HACK','IBIT','WCLD','IGV'],
+    datasets:[{
+      label:'YTD 2026 (%)',
+      data:[23.2,20.2,19.8,16.8,16.4,15.5,14.1,10.6,14.5,9.2,9.0,8.4,7.7,7.0,3.5,2.5,2.0,1.5,1.5,1.2,0.8,0.8,0.7,-1.1,-1.3,-2.2,-2.5,-2.6,-2.7,-5.3,-6.3,-6.9,-11.4,-20,-25.4,-25.8],
+      backgroundColor:[23.2,20.2,19.8,16.8,16.4,15.5,14.1,10.6,14.5,9.2,9.0,8.4,7.7,7.0,3.5,2.5,2.0,1.5,1.5,1.2,0.8,0.8,0.7,-1.1,-1.3,-2.2,-2.5,-2.6,-2.7,-5.3,-6.3,-6.9,-11.4,-20,-25.4,-25.8].map(v=>v>=10?'rgba(0,212,170,0.55)':v>=0?'rgba(59,130,246,0.35)':'rgba(255,77,106,0.45)'),
+      borderRadius:4,borderSkipped:false
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y+'%'}}},scales:{y:{grid:{color:C.border},ticks:{color:C.muted,callback:v=>v+'%'}},x:{grid:{display:false},ticks:{color:C.text,font:{size:8,weight:'bold'},maxRotation:90,minRotation:45}}}}
+});
+
+// 6. Sector Rank
+new Chart(document.getElementById('sectorRankChart'),{
+  type:'bar',
+  data:{
+    labels:['Energy','Staples','Industrials','Utilities','Real Estate','Healthcare','CommSvc','ConDisc','Tech','Financials'],
+    datasets:[{label:'YTD 2026 (%)',data:[23.2,15.5,14.1,10.6,8.4,2.0,-1.3,-2.2,-2.5,-6.9],backgroundColor:[23.2,15.5,14.1,10.6,8.4,2.0,-1.3,-2.2,-2.5,-6.9].map(v=>v>=0?'rgba(0,212,170,0.5)':'rgba(255,77,106,0.45)'),borderRadius:5,borderSkipped:false}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:C.border},ticks:{color:C.muted,callback:v=>v+'%'}},x:{grid:{display:false},ticks:{color:C.text,font:{size:10}}}}}
+});
+
+// 7. AI Bifurcation
+new Chart(document.getElementById('aiBifurcChart'),{
+  type:'bar',
+  data:{
+    labels:['SOXX','SMH','BOTZ','AIQ','ARKK','HACK','IGV','WCLD'],
+    datasets:[
+      {label:'1-Year (%)',data:[62.8,68.2,16.8,20.3,19.7,-9.1,-21.9,-30.9],backgroundColor:'rgba(59,130,246,0.4)',borderRadius:4},
+      {label:'YTD 2026 (%)',data:[20.2,16.4,7.7,-2.7,-6.3,-11.4,-25.8,-25.4],backgroundColor:'rgba(224,124,36,0.5)',borderRadius:4}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:C.text}}},scales:{y:{grid:{color:C.border},ticks:{color:C.muted,callback:v=>v+'%'}},x:{grid:{display:false},ticks:{color:C.text,font:{weight:'bold'}}}}}
+});
+
+// 8. AUM
+new Chart(document.getElementById('aumChart'),{
+  type:'bar',
+  data:{
+    labels:['VOO','SPY','VTI','QQQ','GLD','BND','AGG','VWO','XLK','EFA','IWM','XLF','IBIT','SMH'],
+    datasets:[{label:'AUM ($B)',data:[872,701,588,400,175,152,140,118,89,77,76,52,51,46],backgroundColor:'rgba(59,130,246,0.4)',borderRadius:5}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'$'+ctx.parsed.y+'B'}}},scales:{y:{grid:{color:C.border},ticks:{color:C.muted,callback:v=>'$'+v+'B'}},x:{grid:{display:false},ticks:{color:C.text,font:{weight:'bold',size:10}}}}}
+});
+
+// 9. Flow pie
+new Chart(document.getElementById('flowPieChart'),{
+  type:'doughnut',
+  data:{
+    labels:['Equity ($917B)','Fixed Income ($437B)','Commodity ($58B)','Thematic ($44B)','Other'],
+    datasets:[{data:[917,437,58,44,34],backgroundColor:[C.accent,C.green,C.yellow,C.purple,C.muted],borderColor:'#181b24',borderWidth:3}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:C.text,padding:12}}}}
+});
+
+// 10. S&P targets
+new Chart(document.getElementById('spTargetChart'),{
+  type:'bar',
+  data:{
+    labels:['Oppenheimer','Deutsche Bank','Morgan Stanley','Wells Fargo','Goldman Sachs','JPMorgan','BofA','Ned Davis','Current'],
+    datasets:[{label:'S&P 500 Target',data:[8100,8000,7800,7800,7600,7500,7100,7000,6860],backgroundColor:[8100,8000,7800,7800,7600,7500,7100,7000,6860].map((_,i)=>i===8?'rgba(255,193,7,0.6)':'rgba(59,130,246,0.4)'),borderRadius:5}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:C.border},ticks:{color:C.muted},min:6500},x:{grid:{display:false},ticks:{color:C.text,font:{size:10}}}}}
+});
+
+// 11. Rotation theme
+new Chart(document.getElementById('rotationThemeChart'),{
+  type:'bar',
+  data:{
+    labels:['Small-Cap Value','Small-Cap Growth','Materials','Industrials','Energy','Utilities','Large-Cap Value','S&P 500','Large-Cap Growth'],
+    datasets:[{label:'YTD 2026 (%)',data:[5.9,6.0,9.1,14.1,23.2,10.6,4.0,0.8,0.1],backgroundColor:[5.9,6.0,9.1,14.1,23.2,10.6,4.0,0.8,0.1].map(v=>v>=5?'rgba(0,212,170,0.5)':v>=1?'rgba(59,130,246,0.35)':'rgba(255,193,7,0.4)'),borderRadius:5,borderSkipped:false}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:C.border},ticks:{color:C.muted,callback:v=>v+'%'}},x:{grid:{display:false},ticks:{color:C.text,font:{size:10}}}}}
+});
+
+// 12. Dividend chart
+new Chart(document.getElementById('divChart'),{
+  type:'bar',
+  data:{
+    labels:['JEPQ','JEPI','SCHD','HYG','VIG'],
+    datasets:[
+      {label:'Yield (%)',data:[11.4,8.1,3.5,5.75,1.6],backgroundColor:'rgba(255,77,106,0.4)',borderRadius:4},
+      {label:'Expense (%)',data:[0.35,0.35,0.06,0.49,0.05],backgroundColor:'rgba(59,130,246,0.3)',borderRadius:4}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:C.text}}},scales:{y:{grid:{color:C.border},ticks:{color:C.muted,callback:v=>v+'%'}},x:{grid:{display:false},ticks:{color:C.text,font:{weight:'bold'}}}}}
+});
+
+// 13. Active vs Passive
+new Chart(document.getElementById('activePassiveChart'),{
+  type:'line',
+  data:{
+    labels:['2020','2021','2022','2023','2024','2025','2026E'],
+    datasets:[
+      {label:'Active ETFs (Count)',data:[500,700,900,1200,1800,2800,3500],borderColor:C.purple,backgroundColor:'rgba(167,139,250,0.1)',fill:true,tension:0.3,pointRadius:4,borderWidth:2},
+      {label:'Passive ETFs (Count)',data:[1800,1900,2000,2100,2200,2400,2500],borderColor:C.accent,backgroundColor:'rgba(59,130,246,0.1)',fill:true,tension:0.3,pointRadius:4,borderWidth:2}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:C.text}}},scales:{y:{grid:{color:C.border},ticks:{color:C.muted}},x:{grid:{display:false},ticks:{color:C.text}}}}
+});
+
+// 14. Provider pie
+new Chart(document.getElementById('providerChart'),{
+  type:'doughnut',
+  data:{
+    labels:['iShares (BlackRock) $5.56T','Vanguard $4.25T','SPDR (State Street) $1.99T','Other 964 Providers ~$8T'],
+    datasets:[{data:[5.56,4.25,1.99,7.98],backgroundColor:[C.accent,C.green,C.yellow,C.muted],borderColor:'#181b24',borderWidth:3}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:C.text,padding:10,font:{size:11}}}}}
+});
+</script>
+
+</body>
+</html>

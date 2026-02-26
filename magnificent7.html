@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magnificent 7 Stock Performance Report — Feb 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #181b24;
+    --border: #2a2d38;
+    --accent: #6c63ff;
+    --accent2: #00d4aa;
+    --red: #ff4d6a;
+    --green: #00d4aa;
+    --yellow: #ffc107;
+    --text: #e4e6ed;
+    --muted: #8b8fa3;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+  .hero {
+    background: linear-gradient(135deg, #1a1040 0%, #0f1117 50%, #0a1628 100%);
+    padding: 60px 40px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at 30% 40%, rgba(108,99,255,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(0,212,170,0.06) 0%, transparent 50%);
+    animation: drift 20s ease-in-out infinite;
+  }
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-20px, 10px); }
+  }
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #6c63ff, #00d4aa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    margin-bottom: 8px;
+  }
+  .hero .subtitle {
+    font-size: 1.1rem;
+    color: var(--muted);
+    position: relative;
+  }
+  .hero .date-badge {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 6px 18px;
+    border-radius: 20px;
+    background: rgba(108,99,255,0.15);
+    border: 1px solid rgba(108,99,255,0.3);
+    font-size: 0.85rem;
+    color: var(--accent);
+    position: relative;
+  }
+  .container { max-width: 1300px; margin: 0 auto; padding: 40px 24px; }
+
+  /* Navigation tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 12px 24px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+  .card h2 {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card h2 .icon { font-size: 1.1rem; }
+  .card h3 {
+    font-size: 1.1rem;
+    margin: 20px 0 12px;
+    color: var(--accent);
+  }
+
+  /* Summary grid */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .summary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .summary-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+  }
+  .summary-card .ticker {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .summary-card .company {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .summary-card .change {
+    font-size: 1.6rem;
+    font-weight: 800;
+  }
+  .summary-card .mcap {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .positive { color: var(--green); }
+  .negative { color: var(--red); }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  th {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 2px solid var(--border);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(108,99,255,0.04); }
+
+  /* Chart containers */
+  .chart-container {
+    position: relative;
+    width: 100%;
+    max-height: 420px;
+    margin: 20px 0;
+  }
+
+  /* Pill badges */
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .pill-buy { background: rgba(0,212,170,0.15); color: var(--green); }
+  .pill-hold { background: rgba(255,193,7,0.15); color: var(--yellow); }
+  .pill-sell { background: rgba(255,77,106,0.15); color: var(--red); }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -24px; top: 6px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+  .timeline-item.bearish::before { background: var(--red); }
+  .timeline-item.bullish::before { background: var(--green); }
+  .timeline-date {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .timeline-text {
+    font-size: 0.92rem;
+    margin-top: 4px;
+  }
+
+  /* Stat boxes */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .stat-box {
+    background: rgba(108,99,255,0.06);
+    border: 1px solid rgba(108,99,255,0.15);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-box .number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .stat-box.danger .number { color: var(--red); }
+  .stat-box.warn .number { color: var(--yellow); }
+  .stat-box .label {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Gauge / meter */
+  .gauge-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 20px 0;
+  }
+  .gauge {
+    width: 100%;
+    height: 14px;
+    background: var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+    position: relative;
+  }
+  .gauge-fill {
+    height: 100%;
+    border-radius: 7px;
+    transition: width 1s ease;
+  }
+  .gauge-label {
+    min-width: 120px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .gauge-value {
+    min-width: 50px;
+    text-align: right;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  /* Two column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 800px) {
+    .two-col { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 1.8rem; }
+    .summary-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  }
+
+  /* Quotes */
+  blockquote {
+    border-left: 3px solid var(--accent);
+    padding: 12px 20px;
+    margin: 16px 0;
+    background: rgba(108,99,255,0.04);
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+    color: var(--muted);
+  }
+  blockquote strong { color: var(--text); font-style: normal; }
+
+  .footer {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  /* Company detail cards */
+  .company-detail {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 20px;
+  }
+  .co-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+  .co-card:hover { border-color: rgba(108,99,255,0.4); }
+  .co-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .co-header h3 { margin: 0; font-size: 1.15rem; color: var(--text); }
+  .co-meta { font-size: 0.82rem; color: var(--muted); margin-bottom: 10px; }
+  .co-meta span { margin-right: 16px; }
+  .co-drivers { font-size: 0.88rem; line-height: 1.7; }
+  .co-drivers li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Magnificent 7 Report</h1>
+  <p class="subtitle">Stock Performance, Forward Outlook &amp; AI Skepticism Analysis</p>
+  <span class="date-badge">Data as of February 25, 2026</span>
+</div>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab active" onclick="showSection('perf')">6-Month Performance</button>
+    <button class="tab" onclick="showSection('detail')">Company Deep Dive</button>
+    <button class="tab" onclick="showSection('forward')">Forward Outlook</button>
+    <button class="tab" onclick="showSection('skepticism')">AI Skepticism</button>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 1: 6-Month Performance               -->
+  <!-- ============================================ -->
+  <div id="perf" class="section active">
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="ticker">GOOGL</div>
+        <div class="company">Alphabet</div>
+        <div class="change positive">+47.3%</div>
+        <div class="mcap">$3.80 T</div>
+      </div>
+      <div class="summary-card">
+        <div class="ticker">TSLA</div>
+        <div class="company">Tesla</div>
+        <div class="change positive">+24.3%</div>
+        <div class="mcap">$1.54 T</div>
+      </div>
+      <div class="summary-card">
+        <div class="ticker">NVDA</div>
+        <div class="company">NVIDIA</div>
+        <div class="change positive">+12.2%</div>
+        <div class="mcap">$4.58 T</div>
+      </div>
+      <div class="summary-card">
+        <div class="ticker">AAPL</div>
+        <div class="company">Apple</div>
+        <div class="change positive">+11.3%</div>
+        <div class="mcap">$4.00 T</div>
+      </div>
+      <div class="summary-card">
+        <div class="ticker">AMZN</div>
+        <div class="company">Amazon</div>
+        <div class="change negative">-10.3%</div>
+        <div class="mcap">$2.49 T</div>
+      </div>
+      <div class="summary-card">
+        <div class="ticker">META</div>
+        <div class="company">Meta</div>
+        <div class="change negative">-13.7%</div>
+        <div class="mcap">$1.79 T</div>
+      </div>
+      <div class="summary-card">
+        <div class="ticker">MSFT</div>
+        <div class="company">Microsoft</div>
+        <div class="change negative">-23.1%</div>
+        <div class="mcap">$3.53 T</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>6-Month Return Comparison (Sep 2025 &ndash; Feb 2026)</h2>
+      <div class="chart-container">
+        <canvas id="perfChart"></canvas>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h2>Performance Table</h2>
+        <table>
+          <thead>
+            <tr><th>Company</th><th>Sep 2025</th><th>Feb 2026</th><th>Change</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>GOOGL</strong></td><td>$211</td><td>$311</td><td class="positive">+47.3%</td></tr>
+            <tr><td><strong>TSLA</strong></td><td>$329</td><td>$409</td><td class="positive">+24.3%</td></tr>
+            <tr><td><strong>NVDA</strong></td><td>$171</td><td>$192</td><td class="positive">+12.2%</td></tr>
+            <tr><td><strong>AAPL</strong></td><td>$239</td><td>$266</td><td class="positive">+11.3%</td></tr>
+            <tr><td><strong>AMZN</strong></td><td>$229</td><td>$205</td><td class="negative">-10.3%</td></tr>
+            <tr><td><strong>META</strong></td><td>$739</td><td>$637</td><td class="negative">-13.7%</td></tr>
+            <tr><td><strong>MSFT</strong></td><td>$500</td><td>$385</td><td class="negative">-23.1%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2>Market Cap Comparison</h2>
+        <div class="chart-container">
+          <canvas id="mcapChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Key Themes Driving the Period</h2>
+      <div class="stat-row">
+        <div class="stat-box warn">
+          <div class="number">$660B+</div>
+          <div class="label">Combined Mag 7 AI CapEx in 2026</div>
+        </div>
+        <div class="stat-box danger">
+          <div class="number">-17%</div>
+          <div class="label">SaaS Sector Crash ("SaaSpocalypse")</div>
+        </div>
+        <div class="stat-box">
+          <div class="number">33%</div>
+          <div class="label">Mag 7 Share of S&amp;P 500</div>
+        </div>
+        <div class="stat-box">
+          <div class="number">$20.5T</div>
+          <div class="label">Combined Market Cap</div>
+        </div>
+      </div>
+      <ul style="font-size:0.92rem; padding-left:18px; line-height:2;">
+        <li><strong>AI CapEx Sticker Shock:</strong> Hyperscalers announced ~$660B+ combined AI capital expenditure for 2026, with Amazon ($200B), Alphabet ($175-185B), Microsoft ($140B+), and Meta ($115-135B) leading. Investors demanding proof of ROI.</li>
+        <li><strong>The "SaaSpocalypse" (Late Jan 2026):</strong> Advanced agentic AI from Anthropic and Alibaba triggered a 17% SaaS sector crash, devastating Microsoft in particular.</li>
+        <li><strong>Winners vs. Losers:</strong> Companies demonstrating clear AI monetization (Alphabet via Cloud, NVIDIA via chips) outperformed. Those with massive spending but less visible near-term returns (MSFT, AMZN, META) underperformed.</li>
+        <li><strong>Market Concentration Easing:</strong> The Mag 7 lost 6.3% in early 2026 while the broader market held roughly flat &mdash; a sign the trade is diversifying.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 2: Company Deep Dive                  -->
+  <!-- ============================================ -->
+  <div id="detail" class="section">
+    <div class="company-detail">
+
+      <div class="co-card">
+        <div class="co-header">
+          <h3>Alphabet (GOOGL)</h3>
+          <span class="positive" style="font-size:1.3rem; font-weight:800;">+47.3%</span>
+        </div>
+        <div class="co-meta">
+          <span>ATH: $343.69 (Feb 2, 2026)</span>
+          <span>MCap: $3.80T</span>
+        </div>
+        <h4 style="color:var(--accent); font-size:0.9rem; margin:10px 0 6px;">Q4 2025 Earnings</h4>
+        <div class="co-drivers">
+          <ul>
+            <li>Revenue $113.8B (+18% YoY), EPS $2.82 (beat $2.63 est.)</li>
+            <li>Google Cloud $17.7B (<strong>+48% YoY</strong>) &mdash; the star segment</li>
+            <li>Cloud backlog doubled to $240B; Gemini AI at 750M MAUs</li>
+            <li>Full-year 2025 revenue crossed $400B for the first time</li>
+            <li>2026 CapEx guidance: $175-185B (more than double 2025)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="co-card">
+        <div class="co-header">
+          <h3>Tesla (TSLA)</h3>
+          <span class="positive" style="font-size:1.3rem; font-weight:800;">+24.3%</span>
+        </div>
+        <div class="co-meta">
+          <span>ATH: $498.83 (Dec 22, 2025)</span>
+          <span>MCap: $1.54T</span>
+        </div>
+        <h4 style="color:var(--accent); font-size:0.9rem; margin:10px 0 6px;">Q4 2025 Earnings</h4>
+        <div class="co-drivers">
+          <ul>
+            <li>GAAP net income plunged 61% to $840M; non-GAAP EPS $0.50 (beat $0.40)</li>
+            <li>Full-year deliveries fell 8.6% to 1.64M vehicles</li>
+            <li>Robotaxi testing milestones in Austin without safety driver</li>
+            <li>Elon Musk $1B personal share purchase in Sep boosted sentiment</li>
+            <li>Energy storage deployed 14.2 GWh; revenue +25%</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="co-card">
+        <div class="co-header">
+          <h3>NVIDIA (NVDA)</h3>
+          <span class="positive" style="font-size:1.3rem; font-weight:800;">+12.2%</span>
+        </div>
+        <div class="co-meta">
+          <span>ATH: $207.03 (Oct 29, 2025)</span>
+          <span>MCap: $4.58T (#1 globally)</span>
+        </div>
+        <h4 style="color:var(--accent); font-size:0.9rem; margin:10px 0 6px;">Q3 FY2026 Earnings</h4>
+        <div class="co-drivers">
+          <ul>
+            <li>Revenue $57.0B (+62% YoY); Data Center $51.2B (+66%)</li>
+            <li>Gross margins ~73.5%; "Blackwell sales off the charts"</li>
+            <li>Q4 FY2026 guidance: $65.0B revenue</li>
+            <li>World's most valuable company by market cap</li>
+            <li>Q4 earnings Feb 25 &mdash; consensus expects +67% YoY revenue</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="co-card">
+        <div class="co-header">
+          <h3>Apple (AAPL)</h3>
+          <span class="positive" style="font-size:1.3rem; font-weight:800;">+11.3%</span>
+        </div>
+        <div class="co-meta">
+          <span>ATH: $285.92 (Dec 2, 2025)</span>
+          <span>MCap: $4.00T</span>
+        </div>
+        <h4 style="color:var(--accent); font-size:0.9rem; margin:10px 0 6px;">Q1 FY2026 Earnings (Dec Quarter)</h4>
+        <div class="co-drivers">
+          <ul>
+            <li>Record revenue $143.8B (+16% YoY); EPS $2.84 (+19%)</li>
+            <li>iPhone revenue surged 23% to $85.3B on iPhone 17 strength</li>
+            <li>Services hit record $28.8B (+15%) in prior quarter</li>
+            <li>Active device base reached 2.5 billion</li>
+            <li>Net income $42.1B in the quarter</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="co-card">
+        <div class="co-header">
+          <h3>Amazon (AMZN)</h3>
+          <span class="negative" style="font-size:1.3rem; font-weight:800;">-10.3%</span>
+        </div>
+        <div class="co-meta">
+          <span>ATH: $254.00 (Nov 3, 2025)</span>
+          <span>MCap: $2.49T</span>
+        </div>
+        <h4 style="color:var(--accent); font-size:0.9rem; margin:10px 0 6px;">Q4 2025 Earnings</h4>
+        <div class="co-drivers">
+          <ul>
+            <li>Revenue $213.4B (+14% YoY, beat); AWS $35.6B (+24%)</li>
+            <li>AWS growth fastest in 13 quarters; backlog +40% YoY</li>
+            <li>Full-year 2025 revenue: $716.9B</li>
+            <li style="color:var(--red);"><strong>$200B CapEx plan for 2026 spooked investors</strong></li>
+            <li>Stock plummeted ~18% in February on CapEx shock</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="co-card">
+        <div class="co-header">
+          <h3>Meta Platforms (META)</h3>
+          <span class="negative" style="font-size:1.3rem; font-weight:800;">-13.7%</span>
+        </div>
+        <div class="co-meta">
+          <span>ATH: $796.25 (Aug 15, 2025)</span>
+          <span>MCap: $1.79T</span>
+        </div>
+        <h4 style="color:var(--accent); font-size:0.9rem; margin:10px 0 6px;">Q4 2025 Earnings</h4>
+        <div class="co-drivers">
+          <ul>
+            <li>Revenue $59.9B (+24% YoY, beat); EPS $8.88 (beat $8.23)</li>
+            <li>Full-year 2025 revenue: $201B (+22%)</li>
+            <li>AI-driven ad optimization powering strong growth</li>
+            <li style="color:var(--red);"><strong>2026 CapEx guidance: $115-135B (up to 87% increase)</strong></li>
+            <li>"Meta Superintelligence Labs" initiative spooked investors</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="co-card">
+        <div class="co-header">
+          <h3>Microsoft (MSFT)</h3>
+          <span class="negative" style="font-size:1.3rem; font-weight:800;">-23.1%</span>
+        </div>
+        <div class="co-meta">
+          <span>ATH: $539.83 (Oct 28, 2025)</span>
+          <span>MCap: $3.53T</span>
+        </div>
+        <h4 style="color:var(--accent); font-size:0.9rem; margin:10px 0 6px;">Q2 FY2026 Earnings</h4>
+        <div class="co-drivers">
+          <ul>
+            <li>Revenue $81.3B (+17% YoY); EPS $5.16 (+60%)</li>
+            <li>Azure grew 39% (slowed from 40% prior quarter)</li>
+            <li>Intelligent Cloud: $32.9B (+29%); Cloud crossed $50B</li>
+            <li>Fell 7% post-earnings on Azure slowdown fears</li>
+            <li style="color:var(--red);"><strong>Worst Mag 7 performer; hit hard by "SaaSpocalypse"</strong></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 3: Forward Outlook                    -->
+  <!-- ============================================ -->
+  <div id="forward" class="section">
+
+    <div class="card">
+      <h2>Analyst Consensus Ratings &amp; Price Targets</h2>
+      <table>
+        <thead>
+          <tr><th>Company</th><th>Current Price</th><th>Avg. Target</th><th>Upside</th><th>Rating</th><th>2026 Rev Growth</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>MSFT</strong></td><td>$385</td><td>$603</td>
+            <td class="positive">+56.6%</td>
+            <td><span class="pill pill-buy">Strong Buy</span></td>
+            <td>~17%</td>
+          </tr>
+          <tr>
+            <td><strong>NVDA</strong></td><td>$192</td><td>$256</td>
+            <td class="positive">+33.3%</td>
+            <td><span class="pill pill-buy">Strong Buy</span></td>
+            <td>~50-62%</td>
+          </tr>
+          <tr>
+            <td><strong>AMZN</strong></td><td>$205</td><td>$280</td>
+            <td class="positive">+36.6%</td>
+            <td><span class="pill pill-buy">Strong Buy</span></td>
+            <td>~14%</td>
+          </tr>
+          <tr>
+            <td><strong>META</strong></td><td>$637</td><td>$838</td>
+            <td class="positive">+31.6%</td>
+            <td><span class="pill pill-buy">Strong Buy</span></td>
+            <td>~22-24%</td>
+          </tr>
+          <tr>
+            <td><strong>AAPL</strong></td><td>$266</td><td>$298</td>
+            <td class="positive">+12.0%</td>
+            <td><span class="pill pill-buy">Buy</span></td>
+            <td>~10-16%</td>
+          </tr>
+          <tr>
+            <td><strong>GOOGL</strong></td><td>$311</td><td>$365</td>
+            <td class="positive">+17.4%</td>
+            <td><span class="pill pill-buy">Strong Buy</span></td>
+            <td>~17-18%</td>
+          </tr>
+          <tr>
+            <td><strong>TSLA</strong></td><td>$409</td><td>$396</td>
+            <td class="negative">-3.2%</td>
+            <td><span class="pill pill-hold">Hold</span></td>
+            <td>~15%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Analyst Target Upside vs. Current Price</h2>
+      <div class="chart-container">
+        <canvas id="targetChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2026 AI Capital Expenditure Plans</h2>
+      <div class="chart-container">
+        <canvas id="capexChart"></canvas>
+      </div>
+      <p style="font-size:0.85rem; color:var(--muted); margin-top:12px; text-align:center;">
+        Combined Mag 7 AI CapEx for 2026 is projected at ~$660B+. Apple and Tesla have not disclosed specific figures comparable to hyperscalers.
+      </p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h2>Key Catalysts Ahead</h2>
+        <ul style="font-size:0.9rem; line-height:2; padding-left:18px;">
+          <li><strong>NVDA:</strong> Vera Rubin next-gen architecture (H2 2026); visibility to $500B+ in Blackwell/Rubin revenue</li>
+          <li><strong>GOOGL:</strong> Cloud backlog $240B; Gemini 750M MAUs; AI Overviews in Search</li>
+          <li><strong>MSFT:</strong> Azure AI Services revenue projected at $23.6B; Copilot ecosystem</li>
+          <li><strong>AMZN:</strong> Trainium custom AI chips at $10B+ run rate, triple-digit growth; named "top idea" by 6 banks</li>
+          <li><strong>META:</strong> AI-powered ad optimization; Meta AI assistant; Ray-Ban smart glasses</li>
+          <li><strong>AAPL:</strong> iPhone 17 super-cycle; Apple Intelligence + Siri rollout; 2.5B active devices</li>
+          <li><strong>TSLA:</strong> Robotaxi expansion to 7+ US cities; Optimus humanoid robot</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Key Risks Ahead</h2>
+        <ul style="font-size:0.9rem; line-height:2; padding-left:18px;">
+          <li style="color:var(--red);"><strong>CapEx ROI:</strong> $650B+ spend requires $2T annual revenue by 2030 to justify</li>
+          <li style="color:var(--red);"><strong>Free Cash Flow:</strong> Big Tech FCF could drop up to 90%; AMZN projected -$17B</li>
+          <li style="color:var(--yellow);"><strong>Market Concentration:</strong> Top 5 stocks = 30% of S&amp;P 500 (most since dot-com era)</li>
+          <li style="color:var(--yellow);"><strong>SaaS Disruption:</strong> Agentic AI threatening traditional software business models</li>
+          <li><strong>Regulatory:</strong> DOJ antitrust on Google; 73% of Americans support AI regulation</li>
+          <li><strong>Geopolitical:</strong> China export restrictions; US-EU trade tensions</li>
+          <li><strong>TSLA-specific:</strong> Robotaxi gross losses ~$500M in 2026; analyst target range $25-$600</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Earnings Growth Convergence</h2>
+      <p style="font-size:0.92rem; margin-bottom:16px;">Aggregate Mag 7 earnings growth is expected at ~18-23% for 2026, decelerating from prior years and narrowing the gap with the rest of the S&amp;P 500 (projected ~13%). This convergence has led Citi and Yardeni Research to recommend diversifying away from Mag 7 exposure.</p>
+      <div class="chart-container" style="max-height:320px;">
+        <canvas id="growthChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 4: AI Skepticism                      -->
+  <!-- ============================================ -->
+  <div id="skepticism" class="section">
+
+    <div class="card">
+      <h2>The AI Investment-to-Revenue Gap</h2>
+      <div class="stat-row">
+        <div class="stat-box danger">
+          <div class="number">40 : 1</div>
+          <div class="label">AI Investment vs. Consumer Revenue Ratio</div>
+        </div>
+        <div class="stat-box danger">
+          <div class="number">95%</div>
+          <div class="label">Orgs with Zero Gen AI ROI (MIT)</div>
+        </div>
+        <div class="stat-box warn">
+          <div class="number">90%</div>
+          <div class="label">Firms: No AI Productivity Impact (NBER)</div>
+        </div>
+        <div class="stat-box">
+          <div class="number">100x</div>
+          <div class="label">Revenue Growth Needed by 2030 to Justify CapEx</div>
+        </div>
+      </div>
+      <p style="font-size:0.92rem; margin-top:12px;">
+        Total US AI capital expenditures are projected to exceed <strong>$500B annually</strong> in 2026-2027 &mdash; roughly equal to Singapore's GDP &mdash; while American consumers spend only ~<strong>$12B/year</strong> on AI services. Current AI investment requires generating <strong>$2 trillion in annual revenue by 2030</strong> to justify costs, yet current AI revenues stand at only ~$20B.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>AI Skepticism Gauge &mdash; February 2026</h2>
+      <p style="font-size:0.88rem; color:var(--muted); margin-bottom:20px;">Estimated sentiment across key dimensions (higher = more skeptical)</p>
+
+      <div class="gauge-container">
+        <div class="gauge-label">Investor Concern</div>
+        <div class="gauge"><div class="gauge-fill" style="width:78%; background:linear-gradient(90deg, var(--yellow), var(--red));"></div></div>
+        <div class="gauge-value" style="color:var(--red);">78%</div>
+      </div>
+      <div class="gauge-container">
+        <div class="gauge-label">ROI Skepticism</div>
+        <div class="gauge"><div class="gauge-fill" style="width:85%; background:linear-gradient(90deg, var(--yellow), var(--red));"></div></div>
+        <div class="gauge-value" style="color:var(--red);">85%</div>
+      </div>
+      <div class="gauge-container">
+        <div class="gauge-label">Public Distrust</div>
+        <div class="gauge"><div class="gauge-fill" style="width:72%; background:linear-gradient(90deg, var(--yellow), var(--red));"></div></div>
+        <div class="gauge-value" style="color:var(--yellow);">72%</div>
+      </div>
+      <div class="gauge-container">
+        <div class="gauge-label">Bubble Narrative</div>
+        <div class="gauge"><div class="gauge-fill" style="width:70%; background:linear-gradient(90deg, var(--yellow), var(--red));"></div></div>
+        <div class="gauge-value" style="color:var(--yellow);">70%</div>
+      </div>
+      <div class="gauge-container">
+        <div class="gauge-label">Regulatory Push</div>
+        <div class="gauge"><div class="gauge-fill" style="width:73%; background:linear-gradient(90deg, var(--accent), var(--yellow));"></div></div>
+        <div class="gauge-value" style="color:var(--yellow);">73%</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Voices from Inside the Industry</h2>
+      <blockquote>
+        "People will <strong>overinvest and lose money</strong>."<br>
+        &mdash; <strong>Sam Altman</strong>, CEO, OpenAI
+      </blockquote>
+      <blockquote>
+        "This is <strong>kind of an industrial bubble</strong>."<br>
+        &mdash; <strong>Jeff Bezos</strong>, Amazon
+      </blockquote>
+      <blockquote>
+        "I expect <strong>a lot of capital that was deployed that doesn't deliver returns</strong>."<br>
+        &mdash; <strong>David Solomon</strong>, CEO, Goldman Sachs
+      </blockquote>
+      <blockquote>
+        "The <strong>biggest and most dangerous bubble the world has ever seen</strong> &mdash; 17 times larger than the dot-com bubble."<br>
+        &mdash; <strong>Julien Garran</strong>, MacroStrategy Partnership (Oct 2025)
+      </blockquote>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h2>Public Sentiment Snapshot</h2>
+        <div class="chart-container" style="max-height:350px;">
+          <canvas id="sentimentChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h2>OpenAI's Financial Reality Check</h2>
+        <table>
+          <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Projected 2026 Loss</td><td class="negative"><strong>$14 billion</strong></td></tr>
+            <tr><td>Cumulative Loss through 2029</td><td class="negative">$115 billion</td></tr>
+            <tr><td>2028 Operating Loss</td><td class="negative">$74 billion</td></tr>
+            <tr><td>Cash Runway</td><td class="negative">May run out by mid-2027</td></tr>
+            <tr><td>Stargate Committed Equity</td><td>$52B of $500B headline</td></tr>
+            <tr><td>Unfunded Stargate Gap</td><td class="negative">$448 billion</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Timeline of AI Skepticism Events</h2>
+      <div class="timeline">
+        <div class="timeline-item bearish">
+          <div class="timeline-date">Jan 27, 2025</div>
+          <div class="timeline-text"><strong>DeepSeek R1 Release</strong> &mdash; Nasdaq lost $1T+; NVDA -17% in one day. Challenged the narrative that frontier AI requires vast capital ($6M vs. hundreds of millions).</div>
+        </div>
+        <div class="timeline-item bearish">
+          <div class="timeline-date">Aug 2025</div>
+          <div class="timeline-text"><strong>MIT Media Lab Report</strong> &mdash; "Despite $30-40B in enterprise investment, 95% of organizations are getting zero return on Gen AI."</div>
+        </div>
+        <div class="timeline-item bearish">
+          <div class="timeline-date">Oct 2025</div>
+          <div class="timeline-text"><strong>MacroStrategy Partnership</strong> &mdash; Called AI "the biggest and most dangerous bubble ever seen," 17x larger than dot-com.</div>
+        </div>
+        <div class="timeline-item bearish">
+          <div class="timeline-date">Nov 2025</div>
+          <div class="timeline-text"><strong>OpenAI Financial Disclosures</strong> &mdash; $14B projected 2026 losses; $115B cumulative losses through 2029; potential cash exhaustion by mid-2027.</div>
+        </div>
+        <div class="timeline-item bullish">
+          <div class="timeline-date">Jan 2026</div>
+          <div class="timeline-text"><strong>Market Recovery from DeepSeek</strong> &mdash; Market largely absorbed the efficiency lesson; "DeepSeek didn't cause a frenzy again" (CNBC).</div>
+        </div>
+        <div class="timeline-item bearish">
+          <div class="timeline-date">Late Jan 2026</div>
+          <div class="timeline-text"><strong>"SaaSpocalypse"</strong> &mdash; Agentic AI from Anthropic/Alibaba triggered 17% SaaS sector crash. Microsoft hardest hit.</div>
+        </div>
+        <div class="timeline-item bearish">
+          <div class="timeline-date">Feb 2026</div>
+          <div class="timeline-text"><strong>NBER Study</strong> &mdash; 90% of firms reported no impact of AI on workplace productivity, despite executives projecting 1.4% productivity gain.</div>
+        </div>
+        <div class="timeline-item bearish">
+          <div class="timeline-date">Feb 2026</div>
+          <div class="timeline-text"><strong>Massive CapEx Announcements</strong> &mdash; ~$700B combined for 2026. Amazon's $200B alone exceeded analyst expectations by 36%. Projected negative FCF.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2026 Skepticism Outlook: Three Scenarios</h2>
+      <div class="chart-container" style="max-height:350px;">
+        <canvas id="scenarioChart"></canvas>
+      </div>
+      <div style="margin-top:20px;">
+        <h3 style="color:var(--green);">Bull Case: Skepticism Eases</h3>
+        <p style="font-size:0.9rem;">AGI timeline predictions (late 2026-early 2027) are met. NVIDIA continues exceeding expectations. Enterprise AI adoption inflection arrives. AI revenue growth starts closing the gap with investment.</p>
+
+        <h3 style="color:var(--yellow);">Base Case: "Splinter" Scenario</h3>
+        <p style="font-size:0.9rem;">Market bifurcates between "monetizers" (companies using AI to generate revenue) and "manufacturers" (building AI infrastructure at massive cost). Winners and losers diverge sharply. Overall skepticism remains elevated but concentrated.</p>
+
+        <h3 style="color:var(--red);">Bear Case: Skepticism Intensifies</h3>
+        <p style="font-size:0.9rem;">The 100x revenue gap remains unbridged. Free cash flow compression forces difficult shareholder conversations. An OpenAI funding crisis or major AI project failure becomes a catalytic event. Valuation compression across the sector.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Bottom Line</h2>
+      <p style="font-size:1rem; line-height:1.8;">
+        AI skepticism has evolved from a contrarian view to a mainstream institutional concern. The fundamental tension &mdash; between AI's transformative potential and the extraordinary financial risks of the current investment cycle &mdash; remains unresolved. The <strong>2026-2028 window</strong> is widely viewed as the critical period where the bull and bear cases will be tested against reality. The market is shifting from rewarding <em>AI promises</em> to demanding <em>AI profits</em>, and the Magnificent 7's diverging performance reflects exactly this transition.
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Magnificent 7 Stock &amp; AI Skepticism Report &bull; Generated February 25, 2026 &bull; Data sourced from public filings, analyst reports, and financial news.
+  <br>This report is for informational purposes only and does not constitute investment advice.
+</div>
+
+<script>
+// Tab switching
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Color palette
+const colors = {
+  GOOGL: '#4285F4',
+  TSLA:  '#cc0000',
+  NVDA:  '#76b900',
+  AAPL:  '#a2aaad',
+  AMZN:  '#ff9900',
+  META:  '#1877f2',
+  MSFT:  '#00a4ef'
+};
+
+// 1. Performance bar chart
+new Chart(document.getElementById('perfChart'), {
+  type: 'bar',
+  data: {
+    labels: ['GOOGL', 'TSLA', 'NVDA', 'AAPL', 'AMZN', 'META', 'MSFT'],
+    datasets: [{
+      label: '6-Month Return (%)',
+      data: [47.3, 24.3, 12.2, 11.3, -10.3, -13.7, -23.1],
+      backgroundColor: [47.3, 24.3, 12.2, 11.3, -10.3, -13.7, -23.1].map(v => v >= 0 ? '#00d4aa' : '#ff4d6a'),
+      borderRadius: 6,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ctx.parsed.y + '%' } }
+    },
+    scales: {
+      y: {
+        grid: { color: '#2a2d38' },
+        ticks: { color: '#8b8fa3', callback: v => v + '%' }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#e4e6ed', font: { weight: 'bold' } }
+      }
+    }
+  }
+});
+
+// 2. Market cap doughnut
+new Chart(document.getElementById('mcapChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['NVDA $4.58T', 'AAPL $4.00T', 'GOOGL $3.80T', 'MSFT $3.53T', 'AMZN $2.49T', 'META $1.79T', 'TSLA $1.54T'],
+    datasets: [{
+      data: [4.58, 4.00, 3.80, 3.53, 2.49, 1.79, 1.54],
+      backgroundColor: [colors.NVDA, colors.AAPL, colors.GOOGL, colors.MSFT, colors.AMZN, colors.META, colors.TSLA],
+      borderColor: '#181b24',
+      borderWidth: 3
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: { color: '#e4e6ed', padding: 12, font: { size: 11 } }
+      }
+    }
+  }
+});
+
+// 3. Analyst target upside chart
+new Chart(document.getElementById('targetChart'), {
+  type: 'bar',
+  data: {
+    labels: ['MSFT', 'AMZN', 'NVDA', 'META', 'GOOGL', 'AAPL', 'TSLA'],
+    datasets: [
+      {
+        label: 'Current Price',
+        data: [385, 205, 192, 637, 311, 266, 409],
+        backgroundColor: 'rgba(108,99,255,0.4)',
+        borderRadius: 4,
+      },
+      {
+        label: 'Avg. Analyst Target',
+        data: [603, 280, 256, 838, 365, 298, 396],
+        backgroundColor: 'rgba(0,212,170,0.5)',
+        borderRadius: 4,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#e4e6ed' } }
+    },
+    scales: {
+      y: {
+        grid: { color: '#2a2d38' },
+        ticks: { color: '#8b8fa3', callback: v => '$' + v }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#e4e6ed', font: { weight: 'bold' } }
+      }
+    }
+  }
+});
+
+// 4. CapEx chart
+new Chart(document.getElementById('capexChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Amazon', 'Alphabet', 'Microsoft', 'Meta', 'NVIDIA*', 'Apple*', 'Tesla*'],
+    datasets: [
+      {
+        label: '2025 CapEx ($B)',
+        data: [128, 91, 96, 72, 0, 0, 0],
+        backgroundColor: 'rgba(108,99,255,0.3)',
+        borderRadius: 4,
+      },
+      {
+        label: '2026 CapEx Guidance ($B)',
+        data: [200, 180, 145, 125, 0, 0, 0],
+        backgroundColor: 'rgba(255,77,106,0.5)',
+        borderRadius: 4,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#e4e6ed' } },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y + 'B' } }
+    },
+    scales: {
+      y: {
+        grid: { color: '#2a2d38' },
+        ticks: { color: '#8b8fa3', callback: v => '$' + v + 'B' }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#e4e6ed', font: { size: 11 } }
+      }
+    }
+  }
+});
+
+// 5. Earnings growth convergence
+new Chart(document.getElementById('growthChart'), {
+  type: 'line',
+  data: {
+    labels: ['2023', '2024', '2025', '2026E'],
+    datasets: [
+      {
+        label: 'Magnificent 7 EPS Growth',
+        data: [55, 35, 28, 20],
+        borderColor: '#6c63ff',
+        backgroundColor: 'rgba(108,99,255,0.1)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        borderWidth: 3
+      },
+      {
+        label: 'S&P 493 EPS Growth',
+        data: [2, 5, 8, 13],
+        borderColor: '#00d4aa',
+        backgroundColor: 'rgba(0,212,170,0.1)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        borderWidth: 3
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#e4e6ed' } }
+    },
+    scales: {
+      y: {
+        grid: { color: '#2a2d38' },
+        ticks: { color: '#8b8fa3', callback: v => v + '%' },
+        title: { display: true, text: 'EPS Growth (%)', color: '#8b8fa3' }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#e4e6ed' }
+      }
+    }
+  }
+});
+
+// 6. Public sentiment chart
+new Chart(document.getElementById('sentimentChart'), {
+  type: 'polarArea',
+  data: {
+    labels: [
+      'Concerned about AI (82%)',
+      'Want AI regulation (73%)',
+      'Distrust companies (59%)',
+      'Distrust govt oversight (62%)',
+      'AI hurts online trust (74%)'
+    ],
+    datasets: [{
+      data: [82, 73, 59, 62, 74],
+      backgroundColor: [
+        'rgba(255,77,106,0.5)',
+        'rgba(255,193,7,0.5)',
+        'rgba(108,99,255,0.5)',
+        'rgba(0,164,239,0.5)',
+        'rgba(255,153,0,0.5)'
+      ],
+      borderColor: '#181b24',
+      borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { color: '#e4e6ed', padding: 10, font: { size: 11 } }
+      }
+    },
+    scales: {
+      r: {
+        grid: { color: '#2a2d38' },
+        ticks: { display: false },
+        pointLabels: { display: false }
+      }
+    }
+  }
+});
+
+// 7. Scenario projection chart
+new Chart(document.getElementById('scenarioChart'), {
+  type: 'line',
+  data: {
+    labels: ['Jan 2026', 'Apr', 'Jul', 'Oct', 'Jan 2027'],
+    datasets: [
+      {
+        label: 'Bull: Skepticism Eases',
+        data: [70, 62, 50, 38, 30],
+        borderColor: '#00d4aa',
+        borderDash: [6, 4],
+        tension: 0.3,
+        pointRadius: 4,
+        borderWidth: 2
+      },
+      {
+        label: 'Base: Splinter Scenario',
+        data: [70, 72, 68, 65, 60],
+        borderColor: '#ffc107',
+        tension: 0.3,
+        pointRadius: 4,
+        borderWidth: 3
+      },
+      {
+        label: 'Bear: Skepticism Intensifies',
+        data: [70, 78, 85, 88, 92],
+        borderColor: '#ff4d6a',
+        borderDash: [6, 4],
+        tension: 0.3,
+        pointRadius: 4,
+        borderWidth: 2
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#e4e6ed' } }
+    },
+    scales: {
+      y: {
+        grid: { color: '#2a2d38' },
+        ticks: { color: '#8b8fa3' },
+        title: { display: true, text: 'Skepticism Level (0-100)', color: '#8b8fa3' },
+        min: 0, max: 100
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#e4e6ed' }
+      }
+    }
+  }
+});
+</script>
+
+</body>
+</html>

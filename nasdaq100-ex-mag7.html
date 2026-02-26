@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nasdaq 100 ex-Magnificent 7 Report — Feb 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #181b24;
+    --border: #2a2d38;
+    --accent: #e07c24;
+    --accent2: #00d4aa;
+    --blue: #4a90d9;
+    --red: #ff4d6a;
+    --green: #00d4aa;
+    --yellow: #ffc107;
+    --purple: #a78bfa;
+    --text: #e4e6ed;
+    --muted: #8b8fa3;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text); line-height:1.6; padding:0;
+  }
+  .hero {
+    background: linear-gradient(135deg, #1a1008 0%, #0f1117 50%, #0a1c28 100%);
+    padding: 60px 40px; text-align:center;
+    border-bottom: 1px solid var(--border);
+    position:relative; overflow:hidden;
+  }
+  .hero::before {
+    content:''; position:absolute; top:-50%; left:-50%;
+    width:200%; height:200%;
+    background: radial-gradient(circle at 30% 40%, rgba(224,124,36,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(0,212,170,0.06) 0%, transparent 50%);
+    animation: drift 20s ease-in-out infinite;
+  }
+  @keyframes drift { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,10px)} }
+  .hero h1 {
+    font-size:2.6rem; font-weight:800;
+    background: linear-gradient(135deg, #e07c24, #00d4aa);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text; position:relative; margin-bottom:8px;
+  }
+  .hero .subtitle { font-size:1.1rem; color:var(--muted); position:relative; }
+  .hero .date-badge {
+    display:inline-block; margin-top:16px; padding:6px 18px;
+    border-radius:20px; background:rgba(224,124,36,0.15);
+    border:1px solid rgba(224,124,36,0.3); font-size:0.85rem;
+    color:var(--accent); position:relative;
+  }
+  .container { max-width:1360px; margin:0 auto; padding:40px 24px; }
+  .tabs {
+    display:flex; gap:6px; margin-bottom:32px;
+    border-bottom:1px solid var(--border); flex-wrap:wrap;
+  }
+  .tab {
+    padding:12px 20px; border:none; background:transparent;
+    color:var(--muted); font-size:0.92rem; cursor:pointer;
+    border-bottom:2px solid transparent; transition:all 0.2s; font-weight:500;
+  }
+  .tab:hover { color:var(--text); }
+  .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .section { display:none; }
+  .section.active { display:block; }
+  .card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:16px; padding:28px; margin-bottom:24px;
+  }
+  .card h2 { font-size:1.35rem; margin-bottom:18px; }
+  .card h3 { font-size:1.05rem; margin:18px 0 10px; color:var(--accent); }
+  .chart-container { position:relative; width:100%; max-height:440px; margin:20px 0; }
+  table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+  th {
+    text-align:left; padding:11px 12px; border-bottom:2px solid var(--border);
+    color:var(--muted); font-weight:600; font-size:0.78rem;
+    text-transform:uppercase; letter-spacing:0.5px;
+  }
+  td { padding:11px 12px; border-bottom:1px solid var(--border); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(224,124,36,0.03); }
+  .positive { color:var(--green); }
+  .negative { color:var(--red); }
+  .pill {
+    display:inline-block; padding:3px 10px; border-radius:12px;
+    font-size:0.73rem; font-weight:600;
+  }
+  .pill-buy { background:rgba(0,212,170,0.15); color:var(--green); }
+  .pill-sbuy { background:rgba(0,212,170,0.25); color:#00ffcc; }
+  .pill-hold { background:rgba(255,193,7,0.15); color:var(--yellow); }
+  .pill-sell { background:rgba(255,77,106,0.15); color:var(--red); }
+  .pill-sector {
+    background:rgba(167,139,250,0.12); color:var(--purple);
+    font-size:0.7rem; padding:2px 8px;
+  }
+  .stat-row {
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr));
+    gap:16px; margin:24px 0;
+  }
+  .stat-box {
+    background:rgba(224,124,36,0.06); border:1px solid rgba(224,124,36,0.15);
+    border-radius:12px; padding:20px; text-align:center;
+  }
+  .stat-box .number { font-size:1.9rem; font-weight:800; color:var(--accent); }
+  .stat-box.danger .number { color:var(--red); }
+  .stat-box.green .number { color:var(--green); }
+  .stat-box.blue .number { color:var(--blue); }
+  .stat-box .label { font-size:0.8rem; color:var(--muted); margin-top:4px; }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+  @media(max-width:1000px) { .three-col { grid-template-columns:1fr; } }
+  @media(max-width:800px) {
+    .two-col { grid-template-columns:1fr; }
+    .hero h1 { font-size:1.7rem; }
+  }
+  .co-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:14px; padding:22px; transition:border-color 0.2s;
+  }
+  .co-card:hover { border-color:rgba(224,124,36,0.4); }
+  .co-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .co-header h3 { margin:0; font-size:1.1rem; color:var(--text); }
+  .co-meta { font-size:0.8rem; color:var(--muted); margin-bottom:8px; }
+  .co-meta span { margin-right:14px; }
+  .co-drivers { font-size:0.85rem; line-height:1.7; }
+  .co-drivers li { margin-bottom:3px; }
+  .sector-tag {
+    display:inline-block; padding:2px 10px; border-radius:10px;
+    font-size:0.7rem; font-weight:600; margin-left:8px;
+  }
+  .sector-semi { background:rgba(74,144,217,0.15); color:var(--blue); }
+  .sector-sw { background:rgba(167,139,250,0.15); color:var(--purple); }
+  .sector-cyber { background:rgba(255,77,106,0.15); color:var(--red); }
+  .sector-consumer { background:rgba(0,212,170,0.15); color:var(--green); }
+  .sector-ai { background:rgba(224,124,36,0.2); color:var(--accent); }
+  .gauge-container { display:flex; align-items:center; gap:16px; margin:14px 0; }
+  .gauge {
+    width:100%; height:12px; background:var(--border);
+    border-radius:6px; overflow:hidden;
+  }
+  .gauge-fill { height:100%; border-radius:6px; transition:width 1s ease; }
+  .gauge-label { min-width:140px; font-size:0.83rem; font-weight:600; }
+  .gauge-value { min-width:50px; text-align:right; font-weight:700; font-size:0.88rem; }
+  blockquote {
+    border-left:3px solid var(--accent); padding:12px 20px; margin:16px 0;
+    background:rgba(224,124,36,0.04); border-radius:0 8px 8px 0;
+    font-style:italic; color:var(--muted);
+  }
+  blockquote strong { color:var(--text); font-style:normal; }
+  .footer {
+    text-align:center; padding:40px; color:var(--muted); font-size:0.82rem;
+    border-top:1px solid var(--border); margin-top:40px;
+  }
+  .tier-label {
+    display:inline-block; padding:4px 12px; border-radius:8px;
+    font-size:0.78rem; font-weight:700; margin-bottom:10px;
+  }
+  .tier-1 { background:rgba(224,124,36,0.2); color:var(--accent); }
+  .tier-2 { background:rgba(74,144,217,0.2); color:var(--blue); }
+  .tier-3 { background:rgba(167,139,250,0.2); color:var(--purple); }
+  .tier-4 { background:rgba(0,212,170,0.2); color:var(--green); }
+  .highlight-row { background:rgba(224,124,36,0.04) !important; }
+  .sum-row td { font-style:italic; color:var(--muted); border-top:2px solid var(--border); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Nasdaq 100 ex-Magnificent 7</h1>
+  <p class="subtitle">Top Players, Sector Breakdown, Forward Outlook &amp; AI Exposure Analysis</p>
+  <span class="date-badge">Data as of February 25, 2026</span>
+</div>
+
+<div class="container">
+
+<div class="tabs">
+  <button class="tab active" onclick="showSection('overview')">Overview</button>
+  <button class="tab" onclick="showSection('top15')">Top 15 Players</button>
+  <button class="tab" onclick="showSection('sectors')">Sector Analysis</button>
+  <button class="tab" onclick="showSection('forward')">Forward Outlook</button>
+  <button class="tab" onclick="showSection('ai')">AI Exposure Map</button>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 1: OVERVIEW                           -->
+<!-- ============================================ -->
+<div id="overview" class="section active">
+
+  <div class="stat-row">
+    <div class="stat-box green">
+      <div class="number">$1T</div>
+      <div class="label">Global Semiconductor Sales in 2026 (+30% YoY)</div>
+    </div>
+    <div class="stat-box">
+      <div class="number">93</div>
+      <div class="label">Companies in NDX ex-Mag 7</div>
+    </div>
+    <div class="stat-box blue">
+      <div class="number">~60%</div>
+      <div class="label">NDX Weight = Non-Mag 7</div>
+    </div>
+    <div class="stat-box danger">
+      <div class="number">-$2T</div>
+      <div class="label">SaaS Market Cap Erased (Jan-Feb 2026)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>The Great Convergence: Mag 7 vs. The Rest</h2>
+    <p style="font-size:0.92rem; margin-bottom:18px;">
+      The dominant narrative of 2026 is <strong>"The Great Convergence"</strong> — the earnings growth gap between the Magnificent 7 and the rest of the market is collapsing. The Mag 7's ~18% projected EPS growth is their slowest since 2022, while the S&amp;P 493's ~13% growth is the strongest since 2021. By late 2025, non-Mag 7 stocks already represented <strong>59% of the S&amp;P 500's annual return</strong>, reversing three years of Mag 7 dominance. All 16 Zacks sectors are expected to show positive earnings growth in 2026 — the first time since 2018.
+    </p>
+    <div class="chart-container" style="max-height:340px;">
+      <canvas id="convergenceChart"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>NDX Breadth Is Expanding (Unevenly)</h2>
+      <ul style="font-size:0.9rem; line-height:2; padding-left:18px;">
+        <li>Mag 7 = ~40% of NDX weight, but <strong>only 22% of NDX names beat the benchmark</strong> in 2024</li>
+        <li>NDX stocks above 20-day MA rose from <strong>33% → 53%</strong> (Dec 31 → Jan 26)</li>
+        <li>AI hardware/infra names are leading the broadening</li>
+        <li>SaaS sector is <em>narrowing</em> breadth — "SaaSpocalypse" crushed traditional software</li>
+        <li>Cboe launched the <strong>"Magnificent 10" Index</strong> adding AVGO, AMD, TSMC to Mag 7</li>
+        <li>Equal-weight NDX (QQEW) still lagging cap-weight — but gap expected to narrow</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Sector Performance Heatmap (YTD 2026)</h2>
+      <div class="chart-container" style="max-height:340px;">
+        <canvas id="sectorHeatChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Top 15 Players + Remaining 78 — Performance Table</h2>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Ticker</th><th>Company</th><th>Sector</th><th>MCap</th><th>6-Mo Approx</th><th>YTD 2026</th><th>AI Exposure</th></tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row"><td>1</td><td><strong>AVGO</strong></td><td>Broadcom</td><td><span class="sector-tag sector-semi">Semis</span></td><td>$750B</td><td class="positive">+28%</td><td class="negative">-5%</td><td><span class="sector-tag sector-ai">Core AI Infra</span></td></tr>
+        <tr class="highlight-row"><td>2</td><td><strong>PLTR</strong></td><td>Palantir</td><td><span class="sector-tag sector-sw">Software</span></td><td>$400B+</td><td class="positive">+85%</td><td class="positive">+32%</td><td><span class="sector-tag sector-ai">Core AI Platform</span></td></tr>
+        <tr class="highlight-row"><td>3</td><td><strong>MU</strong></td><td>Micron</td><td><span class="sector-tag sector-semi">Semis</span></td><td>$190B</td><td class="positive">+40%</td><td class="positive">+15%</td><td><span class="sector-tag sector-ai">Core AI Infra</span></td></tr>
+        <tr><td>4</td><td><strong>COST</strong></td><td>Costco</td><td><span class="sector-tag sector-consumer">Consumer</span></td><td>$440B</td><td class="positive">+12%</td><td class="positive">+3%</td><td>Low</td></tr>
+        <tr class="highlight-row"><td>5</td><td><strong>AMD</strong></td><td>AMD</td><td><span class="sector-tag sector-semi">Semis</span></td><td>$170B</td><td class="negative">-8%</td><td class="negative">-15%</td><td><span class="sector-tag sector-ai">Core AI Infra</span></td></tr>
+        <tr><td>6</td><td><strong>NFLX</strong></td><td>Netflix</td><td><span class="sector-tag sector-consumer">Consumer</span></td><td>$370B</td><td class="positive">+5%</td><td class="negative">-12%</td><td>Low</td></tr>
+        <tr class="highlight-row"><td>7</td><td><strong>AMAT</strong></td><td>Applied Materials</td><td><span class="sector-tag sector-semi">Semi Equip</span></td><td>$165B</td><td class="positive">+18%</td><td class="positive">+11%</td><td><span class="sector-tag sector-ai">AI Infra</span></td></tr>
+        <tr class="highlight-row"><td>8</td><td><strong>ARM</strong></td><td>Arm Holdings</td><td><span class="sector-tag sector-semi">Semis</span></td><td>$155B</td><td class="positive">+15%</td><td class="negative">-8%</td><td><span class="sector-tag sector-ai">Core AI Infra</span></td></tr>
+        <tr class="highlight-row"><td>9</td><td><strong>MRVL</strong></td><td>Marvell Technology</td><td><span class="sector-tag sector-semi">Semis</span></td><td>$85B</td><td class="positive">+10%</td><td class="negative">-12%</td><td><span class="sector-tag sector-ai">Core AI Infra</span></td></tr>
+        <tr><td>10</td><td><strong>CRM</strong></td><td>Salesforce</td><td><span class="sector-tag sector-sw">SaaS</span></td><td>$240B</td><td class="negative">-20%</td><td class="negative">-25%</td><td>High</td></tr>
+        <tr><td>11</td><td><strong>NOW</strong></td><td>ServiceNow</td><td><span class="sector-tag sector-sw">SaaS</span></td><td>$125B</td><td class="negative">-30%</td><td class="negative">-34%</td><td>Very High</td></tr>
+        <tr><td>12</td><td><strong>CRWD</strong></td><td>CrowdStrike</td><td><span class="sector-tag sector-cyber">Cyber</span></td><td>$85B</td><td class="negative">-18%</td><td class="negative">-22%</td><td>High</td></tr>
+        <tr><td>13</td><td><strong>PANW</strong></td><td>Palo Alto Networks</td><td><span class="sector-tag sector-cyber">Cyber</span></td><td>$55B</td><td class="negative">-15%</td><td class="negative">-20%</td><td>High</td></tr>
+        <tr><td>14</td><td><strong>ADBE</strong></td><td>Adobe</td><td><span class="sector-tag sector-sw">SaaS</span></td><td>$155B</td><td class="negative">-25%</td><td class="negative">-32%</td><td>High</td></tr>
+        <tr><td>15</td><td><strong>BKNG</strong></td><td>Booking Holdings</td><td><span class="sector-tag sector-consumer">Travel</span></td><td>$140B</td><td class="negative">-12%</td><td class="negative">-17%</td><td>Moderate</td></tr>
+        <tr class="sum-row">
+          <td colspan="2"></td>
+          <td><strong>Remaining 78 companies</strong></td>
+          <td>Mixed</td>
+          <td>~$3.5T</td>
+          <td>~Flat</td>
+          <td class="negative">-3% avg</td>
+          <td>Varies</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <p style="font-size:0.8rem; color:var(--muted); margin-top:12px;">
+      Performance figures are approximate, based on available data from analyst reports and financial news. "Remaining 78" is an aggregate estimate.
+      Notable names in the remaining group: TMUS, INTU, QCOM, TXN, LRCX, KLAC, PEP, CSCO, REGN, ISRG, VRTX, CDNS, SNPS, MELI, MNST, FTNT, ORLY, ADP.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>6-Month Performance: Top 15 vs. Mag 7 Average</h2>
+    <div class="chart-container">
+      <canvas id="perfCompareChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 2: TOP 15 PLAYERS DEEP DIVE           -->
+<!-- ============================================ -->
+<div id="top15" class="section">
+
+  <div class="card" style="background:linear-gradient(135deg, rgba(224,124,36,0.06) 0%, var(--card) 100%);">
+    <h2>AI Infrastructure Titans</h2>
+    <p style="font-size:0.9rem; color:var(--muted); margin-bottom:20px;">The primary beneficiaries of the $660B+ hyperscaler AI CapEx wave</p>
+  </div>
+
+  <div class="three-col">
+    <div class="co-card">
+      <div class="co-header">
+        <h3>Broadcom (AVGO)</h3>
+        <span class="sector-tag sector-semi">Semis</span>
+      </div>
+      <div class="co-meta">
+        <span>ATH: $412 (Dec 2025)</span>
+        <span>MCap: ~$750B</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li><strong>AI revenue to double in FY2026</strong> → $40-44B</li>
+        <li>70-80% share of custom AI ASIC market</li>
+        <li>$73B hardware backlog; <strong>5th hyperscaler customer confirmed</strong></li>
+        <li>$11B order from Anthropic for late 2026</li>
+        <li>Google TPU = ~58% of ASIC shipments</li>
+        <li>Target: $452-$475 | <span class="pill pill-sbuy">Strong Buy</span> (46 Buy, 2 Hold)</li>
+      </ul></div>
+    </div>
+
+    <div class="co-card">
+      <div class="co-header">
+        <h3>Micron (MU)</h3>
+        <span class="sector-tag sector-semi">Memory</span>
+      </div>
+      <div class="co-meta">
+        <span>HBM: Sold out through 2026</span>
+        <span>MCap: ~$190B</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>FY2026 revenue <strong>+98% to $73.9B</strong>; earnings +284%</li>
+        <li>Q1: $13.6B revenue (+57%), gross margin ~57%</li>
+        <li>Q2 guidance: $18.7B, GM ~68%, record EPS $8.42</li>
+        <li>HBM TAM: $35B (2025) → <strong>$100B (2028)</strong></li>
+        <li>HBM4 next-gen fully booked</li>
+        <li>Target: ~$291 (range $86-$500) | <span class="pill pill-buy">Buy</span></li>
+      </ul></div>
+    </div>
+
+    <div class="co-card">
+      <div class="co-header">
+        <h3>AMD</h3>
+        <span class="sector-tag sector-semi">GPU/CPU</span>
+      </div>
+      <div class="co-meta">
+        <span>NVDA Challenger</span>
+        <span>MCap: ~$170B</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>2026 AI revenue target: <strong>$14-15B</strong></li>
+        <li>MI450 accelerators + Helios rack-scale (H2 2026)</li>
+        <li>Server CPU growth 50%+; LTCAGR 35%+ revenue</li>
+        <li>OpenAI and Oracle partnerships</li>
+        <li>Stock down ~15% YTD on execution concerns</li>
+        <li>Target: $263-$283 | <span class="pill pill-sbuy">Strong Buy</span></li>
+      </ul></div>
+    </div>
+
+    <div class="co-card">
+      <div class="co-header">
+        <h3>Applied Materials (AMAT)</h3>
+        <span class="sector-tag sector-semi">Semi Equip</span>
+      </div>
+      <div class="co-meta">
+        <span>Surged 11% post-earnings</span>
+        <span>MCap: ~$165B</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>Q1 2026: $7.01B revenue (beat $6.88B consensus)</li>
+        <li>Semi equipment industry → <strong>$126B</strong> in 2026 (+9%)</li>
+        <li>~20% semi systems sales growth this year</li>
+        <li>Advanced packaging (CoWoS) demand surging</li>
+        <li>FY26 EPS est raised 18% to $11.86</li>
+        <li>Target: $363-$428 | <span class="pill pill-buy">Buy</span></li>
+      </ul></div>
+    </div>
+
+    <div class="co-card">
+      <div class="co-header">
+        <h3>Arm Holdings (ARM)</h3>
+        <span class="sector-tag sector-semi">IP/Arch</span>
+      </div>
+      <div class="co-meta">
+        <span>Record royalty quarter</span>
+        <span>MCap: ~$155B</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>Record royalty revenue $620M (+21% YoY)</li>
+        <li><strong>Data center royalties doubled YoY</strong></li>
+        <li>License revenue +56% to $515M</li>
+        <li>Non-GAAP operating margins: 41%</li>
+        <li>ARM architecture underpins all custom AI chips</li>
+        <li>Target: $160-$162 | <span class="pill pill-buy">Buy</span> (P/E 70x+)</li>
+      </ul></div>
+    </div>
+
+    <div class="co-card">
+      <div class="co-header">
+        <h3>Marvell Technology (MRVL)</h3>
+        <span class="sector-tag sector-semi">Custom Si</span>
+      </div>
+      <div class="co-meta">
+        <span>AI revenue surpassing $2.5B target</span>
+        <span>MCap: ~$85B</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>AI revenue crossed $1.5B in FY25; <strong>"very significantly" surpassing $2.5B</strong> in FY26</li>
+        <li>Data center revenue growth >25% YoY</li>
+        <li>Custom silicon growth 20%+; catching AVGO in ASIC</li>
+        <li>Electro-optics and networking for AI data centers</li>
+        <li>Customer concentration risk remains</li>
+        <li>Target: $111-$119 | <span class="pill pill-buy">Buy</span></li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:24px; background:linear-gradient(135deg, rgba(167,139,250,0.06) 0%, var(--card) 100%);">
+    <h2>SaaS, Cybersecurity &amp; AI Platforms</h2>
+    <p style="font-size:0.9rem; color:var(--muted); margin-bottom:20px;">The "SaaSpocalypse" survivors and AI platform winners</p>
+  </div>
+
+  <div class="three-col">
+    <div class="co-card">
+      <div class="co-header">
+        <h3>Palantir (PLTR)</h3>
+        <span class="sector-tag sector-ai">AI Platform</span>
+      </div>
+      <div class="co-meta">
+        <span>+155% in 2025, +650% over 5yr</span>
+        <span>MCap: $400B+</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>2026 revenue guidance: <strong>$7.3B (+61%)</strong> vs Street est +43%</li>
+        <li>Operating margins: <strong>57%</strong> (industry-leading)</li>
+        <li>US commercial revenue +121% YoY; govt +66%</li>
+        <li>593 customers (+69%); net retention 134%</li>
+        <li>$10B, 10-year Army framework contract</li>
+        <li>Target: $191-$260 | <span class="pill pill-buy">Buy</span> <span style="color:var(--red); font-size:0.75rem;">(200x+ PE!)</span></li>
+      </ul></div>
+    </div>
+
+    <div class="co-card">
+      <div class="co-header">
+        <h3>ServiceNow (NOW)</h3>
+        <span class="sector-tag sector-sw">Enterprise AI</span>
+      </div>
+      <div class="co-meta">
+        <span style="color:var(--red);">Down 34% YTD 2026</span>
+        <span>MCap: ~$125B</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>Now Assist ACV >$600M; targeting <strong>$1B AI revenue</strong></li>
+        <li>Pivoting to "AI Control Tower" for enterprise</li>
+        <li>$7.75B Armis acquisition (cybersecurity)</li>
+        <li>~$15.5B subscription rev guidance (~20% cc growth)</li>
+        <li>Earnings growth forecast: <strong>+56.2%</strong></li>
+        <li>Target: $185-$203 (~98% upside) | <span class="pill pill-sbuy">Strong Buy</span></li>
+      </ul></div>
+    </div>
+
+    <div class="co-card">
+      <div class="co-header">
+        <h3>Salesforce (CRM)</h3>
+        <span class="sector-tag sector-sw">SaaS/CRM</span>
+      </div>
+      <div class="co-meta">
+        <span style="color:var(--red);">Down ~25% YTD</span>
+        <span>MCap: ~$240B</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>FY26 revenue guidance: $41.45-$41.55B</li>
+        <li>Agentforce ARR >$1.4B <strong>(+114% YoY)</strong></li>
+        <li>Agentforce recurring revenue <strong>+330%</strong> in Q3</li>
+        <li>Per-seat model under existential threat from AI agents</li>
+        <li>Wedbush added to AI 30 watchlist</li>
+        <li>Target: $315-$327 | <span class="pill pill-buy">Moderate Buy</span></li>
+      </ul></div>
+    </div>
+
+    <div class="co-card">
+      <div class="co-header">
+        <h3>CrowdStrike (CRWD)</h3>
+        <span class="sector-tag sector-cyber">Cybersecurity</span>
+      </div>
+      <div class="co-meta">
+        <span>-11.3% on Feb 23 alone</span>
+        <span>MCap: ~$85B</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>Falcon net new ARR +50% sequentially</li>
+        <li>20%+ annual revenue growth runway (3-5 yrs)</li>
+        <li>Charlotte AI assistant driving engagement</li>
+        <li>Feb 23 bloodbath: Anthropic AI coding agent fears</li>
+        <li>Paradox: AI both threatens and creates demand</li>
+        <li>Target: $480-$559 | <span class="pill pill-buy">Buy</span></li>
+      </ul></div>
+    </div>
+
+    <div class="co-card">
+      <div class="co-header">
+        <h3>Palo Alto Networks (PANW)</h3>
+        <span class="sector-tag sector-cyber">Cybersecurity</span>
+      </div>
+      <div class="co-meta">
+        <span>FY26 revenue &gt;$11.3B</span>
+        <span>MCap: ~$55B</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>Q2 EPS growth +27%; platformization strategy</li>
+        <li>Cortex XSIAM / Prisma Cloud AI-native security</li>
+        <li>Every new AI model = new attack vectors</li>
+        <li>2026: "AI-assisted" → "AI-native" security inflection</li>
+        <li>HSBC downgrade to Reduce; most analysts still Buy</li>
+        <li>Target: $210-$217 (~54% upside) | <span class="pill pill-buy">Buy</span></li>
+      </ul></div>
+    </div>
+
+    <div class="co-card">
+      <div class="co-header">
+        <h3>Adobe (ADBE)</h3>
+        <span class="sector-tag sector-sw">Creative SaaS</span>
+      </div>
+      <div class="co-meta">
+        <span style="color:var(--red);">Down 32% over past year</span>
+        <span>MCap: ~$155B</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>RPO (backlog): $25.2B</li>
+        <li>35%+ Photoshop users adopting Firefly AI</li>
+        <li>Most competitive risk: Canva, open-source AI tools</li>
+        <li>Per-seat model under pressure from AI disruption</li>
+        <li>Implied upside ~60% to targets</li>
+        <li>Target: $392-$417 | <span class="pill pill-hold">Buy/Hold (mixed)</span></li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:24px; background:linear-gradient(135deg, rgba(0,212,170,0.06) 0%, var(--card) 100%);">
+    <h2>Consumer &amp; Defensive Plays</h2>
+  </div>
+
+  <div class="three-col">
+    <div class="co-card">
+      <div class="co-header">
+        <h3>Costco (COST)</h3>
+        <span class="sector-tag sector-consumer">Retail</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>Q1 FY26: $67.3B rev (+8.3%); comps +6.4%</li>
+        <li>Membership fees +14% to $1.33B; <strong>89.7% renewal</strong></li>
+        <li>Digital sales +20.5%; 2026 profit est $9.2B (+11%)</li>
+        <li>Target: $1,050-$1,076 | <span class="pill pill-buy">Buy</span></li>
+      </ul></div>
+    </div>
+
+    <div class="co-card">
+      <div class="co-header">
+        <h3>Netflix (NFLX)</h3>
+        <span class="sector-tag sector-consumer">Streaming</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>Record earnings, but stock at 52-week low</li>
+        <li>Analyst called it "dead money" despite results</li>
+        <li>11-13% organic sales growth; margin expansion</li>
+        <li>Ad-tier monetization ramping globally</li>
+        <li>Target: ~$111-$143 (post-split) | <span class="pill pill-buy">Buy</span></li>
+      </ul></div>
+    </div>
+
+    <div class="co-card">
+      <div class="co-header">
+        <h3>Booking Holdings (BKNG)</h3>
+        <span class="sector-tag sector-consumer">Travel</span>
+      </div>
+      <div class="co-drivers"><ul>
+        <li>25-for-1 stock split (effective Apr 2, 2026)</li>
+        <li>ATH: $5,839 (late 2025); now ~$4,077 (-17% YoY)</li>
+        <li>$700M strategic reinvestment: AI, Connected Trip</li>
+        <li>Morgan Stanley upgraded to OW ($5,500)</li>
+        <li>Target: $5,899-$6,072 (~45% upside) | <span class="pill pill-buy">Buy</span></li>
+      </ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 3: SECTOR ANALYSIS                    -->
+<!-- ============================================ -->
+<div id="sectors" class="section">
+
+  <div class="card">
+    <h2>Sector Performance — NDX ex-Mag 7 (YTD 2026)</h2>
+    <div class="chart-container">
+      <canvas id="sectorBarChart"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Semiconductors: The $1T "Giga Cycle"</h2>
+      <div class="stat-row" style="grid-template-columns:1fr 1fr;">
+        <div class="stat-box green"><div class="number">$975B</div><div class="label">Global Semi Sales 2026</div></div>
+        <div class="stat-box"><div class="number">+30%</div><div class="label">YoY Growth</div></div>
+      </div>
+      <ul style="font-size:0.9rem; line-height:1.9; padding-left:18px;">
+        <li>Hyperscaler infra spend up <strong>36% YoY</strong>; Agentic AI requires 100x more compute vs 2024 chatbots</li>
+        <li><strong>AVGO:</strong> Custom ASIC king with 70-80% market share and $73B backlog</li>
+        <li><strong>MU:</strong> HBM supercycle — entire 2026 supply (incl. HBM4) sold out</li>
+        <li><strong>AMAT:</strong> Semi equipment to $126B (+9%); advanced packaging surging</li>
+        <li><strong>ARM:</strong> Data center royalties doubled; every custom chip uses ARM architecture</li>
+        <li><strong>MRVL:</strong> AI revenue "very significantly" surpassing $2.5B target</li>
+        <li><strong>AMD:</strong> MI450 + Helios launching H2 2026; server CPU gaining share</li>
+        <li>BofA identified <strong>6 stocks to lead the $1T chip surge</strong></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>The "SaaSpocalypse" — Software in Crisis</h2>
+      <div class="stat-row" style="grid-template-columns:1fr 1fr;">
+        <div class="stat-box danger"><div class="number">-$2T</div><div class="label">SaaS Market Cap Erased</div></div>
+        <div class="stat-box danger"><div class="number">-10%+</div><div class="label">Sector Drop in Jan 2026</div></div>
+      </div>
+      <ul style="font-size:0.9rem; line-height:1.9; padding-left:18px;">
+        <li><strong>Root cause:</strong> Autonomous AI agents dismantling the "per-seat" licensing model</li>
+        <li>1 AI agent = workload of <strong>10-15 mid-level employees</strong></li>
+        <li>Gartner: 40% of enterprise apps will integrate AI agents by 2026 (vs &lt;5% in 2025)</li>
+        <li><strong>CRM &amp; ADBE:</strong> Down 25%+ YTD — existential per-seat questions</li>
+        <li><strong>NOW:</strong> Down 34% but pivoting to "AI Control Tower"</li>
+        <li><strong>Winners:</strong> Companies that become AI orchestrators vs. those replaced by agents</li>
+        <li>Only 6% of orgs have advanced AI security strategies</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Cybersecurity: Paradox of AI</h2>
+      <blockquote>
+        "Every new AI model deployed creates new attack vectors. 2026 marks the inflection from <strong>AI-assisted</strong> to <strong>AI-native</strong> security."<br>
+        &mdash; Palo Alto Networks 2026 Cyber Predictions
+      </blockquote>
+      <ul style="font-size:0.9rem; line-height:1.9; padding-left:18px;">
+        <li><strong>Feb 23 bloodbath:</strong> CRWD -11.3%, PANW down hard — Anthropic's autonomous "remediation" tools spooked investors</li>
+        <li>AI both <em>threatens</em> incumbents (automated coding/security) AND <em>drives demand</em> (AI-powered attacks need AI defenses)</li>
+        <li>Dan Ives (Wedbush): expects CRWD and PANW to emerge as <strong>long-term winners</strong></li>
+        <li>CRWD Falcon ARR +50% sequentially; PANW platformization gaining traction</li>
+        <li>Cybersecurity budgets expected to expand as AI attack surface grows</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Consumer &amp; Defensive Sectors</h2>
+      <ul style="font-size:0.9rem; line-height:1.9; padding-left:18px;">
+        <li><strong>COST:</strong> Fortress defensive — 89.7% membership renewal, +20.5% digital. Nearly recession-proof.</li>
+        <li><strong>PEP:</strong> 54th consecutive year of dividend increases. Classic income defensive.</li>
+        <li><strong>TMUS:</strong> Guidance: $77B service rev (+8%), $37-37.5B adj EBITDA. Launching agentic AI on 5G Advanced.</li>
+        <li><strong>NFLX:</strong> "Dead money" paradox — record earnings but 52-week low. Ad-tier ramping.</li>
+        <li><strong>BKNG:</strong> $700M AI investment; 25-for-1 split upcoming. Travel demand resilient but macro risks.</li>
+        <li><strong>INTU:</strong> $21.6B revenue est (+11%); net profit $6.6B (+60%). AI tax assistance growing.</li>
+        <li>These names attracting rotation flows from stressed tech/SaaS</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>AI Revenue Contribution by Sector</h2>
+    <div class="chart-container" style="max-height:380px;">
+      <canvas id="aiRevChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 4: FORWARD OUTLOOK                    -->
+<!-- ============================================ -->
+<div id="forward" class="section">
+
+  <div class="card">
+    <h2>Analyst Consensus Targets — Top 15 ex-Mag 7</h2>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr><th>Ticker</th><th>Current</th><th>Avg Target</th><th>Upside</th><th>Rating</th><th>2026 Rev Growth</th><th>Key Thesis</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>NOW</strong></td><td>~$103</td><td>$194</td><td class="positive">+88%</td><td><span class="pill pill-sbuy">Strong Buy</span></td><td>+20%</td><td>AI Control Tower; $1B AI rev target</td></tr>
+        <tr><td><strong>ADBE</strong></td><td>~$260</td><td>$405</td><td class="positive">+56%</td><td><span class="pill pill-hold">Mixed</span></td><td>+10%</td><td>Firefly AI; $25.2B RPO backlog</td></tr>
+        <tr><td><strong>PANW</strong></td><td>~$140</td><td>$214</td><td class="positive">+53%</td><td><span class="pill pill-buy">Buy</span></td><td>+15%</td><td>AI-native security inflection</td></tr>
+        <tr><td><strong>BKNG</strong></td><td>~$4,077</td><td>$5,986</td><td class="positive">+47%</td><td><span class="pill pill-buy">Buy</span></td><td>+10%</td><td>AI travel; Connected Trip; 25:1 split</td></tr>
+        <tr><td><strong>MRVL</strong></td><td>~$84</td><td>$115</td><td class="positive">+37%</td><td><span class="pill pill-buy">Buy</span></td><td>+25%</td><td>Custom silicon; AI ASICs</td></tr>
+        <tr><td><strong>AVGO</strong></td><td>~$340</td><td>$463</td><td class="positive">+36%</td><td><span class="pill pill-sbuy">Strong Buy</span></td><td>+40%</td><td>AI ASIC king; $40B+ AI revenue</td></tr>
+        <tr><td><strong>TMUS</strong></td><td>~$227</td><td>$258</td><td class="positive">+14%</td><td><span class="pill pill-sbuy">Strong Buy</span></td><td>+7%</td><td>5G expansion; $3B AI-driven EBITDA</td></tr>
+        <tr><td><strong>MU</strong></td><td>~$108</td><td>$291</td><td class="positive">+169%</td><td><span class="pill pill-buy">Buy</span></td><td>+98%</td><td>HBM supercycle; revenue nearly doubling</td></tr>
+        <tr><td><strong>AMD</strong></td><td>~$108</td><td>$273</td><td class="positive">+153%</td><td><span class="pill pill-sbuy">Strong Buy</span></td><td>+30%</td><td>MI450 launch; NVDA challenger</td></tr>
+        <tr><td><strong>CRWD</strong></td><td>~$350</td><td>$520</td><td class="positive">+49%</td><td><span class="pill pill-buy">Buy</span></td><td>+20%</td><td>Platform consolidation; AI security</td></tr>
+        <tr><td><strong>ARM</strong></td><td>~$125</td><td>$161</td><td class="positive">+29%</td><td><span class="pill pill-buy">Buy</span></td><td>+20%</td><td>DC royalties 2x; custom AI chip IP</td></tr>
+        <tr><td><strong>CRM</strong></td><td>~$260</td><td>$321</td><td class="positive">+23%</td><td><span class="pill pill-buy">Mod Buy</span></td><td>+10%</td><td>Agentforce +330%; AI CRM pivot</td></tr>
+        <tr><td><strong>AMAT</strong></td><td>~$190</td><td>$396</td><td class="positive">+108%</td><td><span class="pill pill-buy">Buy</span></td><td>+15%</td><td>Semi equip giga-cycle; CoWoS</td></tr>
+        <tr><td><strong>PLTR</strong></td><td>~$200</td><td>$197</td><td class="negative">-2%</td><td><span class="pill pill-buy">Buy</span></td><td>+61%</td><td>AIP platform; govt + commercial</td></tr>
+        <tr><td><strong>COST</strong></td><td>~$1,040</td><td>$1,063</td><td class="positive">+2%</td><td><span class="pill pill-buy">Buy</span></td><td>+8%</td><td>Defensive compounder; membership moat</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Consensus Upside: Top 15 Companies</h2>
+    <div class="chart-container" style="max-height:420px;">
+      <canvas id="upsideChart"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Key Catalysts for 2026</h2>
+      <ul style="font-size:0.9rem; line-height:2; padding-left:18px;">
+        <li><strong>Semiconductor Giga Cycle:</strong> $975B global sales; equipment +9%; HBM TAM explosion</li>
+        <li><strong>Custom AI Silicon:</strong> AVGO, MRVL, AMD all ramping custom chips for hyperscalers</li>
+        <li><strong>SaaS AI Pivot:</strong> Companies transitioning from per-seat to consumption-based AI models</li>
+        <li><strong>Cybersecurity AI-native era:</strong> Every AI deployment = expanded attack surface</li>
+        <li><strong>HBM4 &amp; CoWoS:</strong> Next-gen memory and packaging technologies scaling</li>
+        <li><strong>Enterprise AI orchestration:</strong> NOW, CRM positioning as AI workflow platforms</li>
+        <li><strong>Consumer defensives:</strong> Rotation into COST, PEP as AI uncertainty grows</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Key Risks for 2026</h2>
+      <ul style="font-size:0.9rem; line-height:2; padding-left:18px;">
+        <li style="color:var(--red);"><strong>SaaS Model Destruction:</strong> AI agents kill per-seat licensing — $2T already erased</li>
+        <li style="color:var(--red);"><strong>Hyperscaler CapEx Peak:</strong> If spending slows, entire semi chain faces downside</li>
+        <li style="color:var(--yellow);"><strong>Valuation Risk:</strong> PLTR at 200x+ PE; ARM at 70x+ — any miss triggers sharp corrections</li>
+        <li style="color:var(--yellow);"><strong>Memory Cyclicality:</strong> MU's 284% earnings growth assumes sustained HBM demand</li>
+        <li><strong>China Export Restrictions:</strong> AMAT, LRCX, KLAC face regulatory headwinds</li>
+        <li><strong>AI Security Disruption:</strong> Autonomous remediation tools threaten CRWD/PANW models</li>
+        <li><strong>Macro Weakness:</strong> Consumer spending slowdown hurting BKNG, NFLX</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Revenue Growth Comparison: Top NDX ex-Mag7 Companies</h2>
+    <div class="chart-container" style="max-height:380px;">
+      <canvas id="revGrowthChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 5: AI EXPOSURE MAP                    -->
+<!-- ============================================ -->
+<div id="ai" class="section">
+
+  <div class="card">
+    <h2>AI Exposure Tiers — NDX ex-Mag 7</h2>
+    <p style="font-size:0.92rem; color:var(--muted); margin-bottom:24px;">
+      How directly each company benefits from the AI capex wave and AI adoption cycle.
+    </p>
+    <div class="chart-container" style="max-height:420px;">
+      <canvas id="aiTierChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>AI Exposure Matrix</h2>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr><th>Tier</th><th>Companies</th><th>AI Revenue Visibility</th><th>2026 AI Revenue</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tier-label tier-1">Tier 1: Core AI Infra</span></td>
+          <td><strong>AVGO, MU, MRVL, ARM, AMD, AMAT</strong></td>
+          <td>Direct, quantifiable AI revenue streams</td>
+          <td>AVGO $40B+, MU $30B+, AMD $14B, MRVL $2.5B+</td>
+        </tr>
+        <tr>
+          <td><span class="tier-label tier-2">Tier 2: AI Platform / Software</span></td>
+          <td><strong>PLTR, NOW, CRM</strong></td>
+          <td>AI is core product or primary growth driver</td>
+          <td>PLTR $7.3B (all AI), NOW $1B target, CRM $1.4B ARR</td>
+        </tr>
+        <tr>
+          <td><span class="tier-label tier-3">Tier 3: AI-Enhanced Products</span></td>
+          <td><strong>ADBE, CRWD, PANW, INTU</strong></td>
+          <td>AI features augmenting existing products</td>
+          <td>Material but not separately disclosed</td>
+        </tr>
+        <tr>
+          <td><span class="tier-label tier-4">Tier 4: AI-Adjacent / Limited</span></td>
+          <td><strong>NFLX, BKNG, COST, TMUS, PEP</strong></td>
+          <td>AI for operations/efficiency, not a revenue driver</td>
+          <td>Indirect; TMUS $3B AI-driven EBITDA by 2027</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>AI Revenue Scale: Top NDX ex-Mag7 Beneficiaries</h2>
+    <div class="chart-container" style="max-height:380px;">
+      <canvas id="aiRevBarChart"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>The "Magnificent 10" Expansion</h2>
+      <p style="font-size:0.92rem; margin-bottom:16px;">
+        The AI trade is formally broadening. Cboe Global Markets launched the <strong>"Magnificent 10" Index</strong>, adding <strong>Broadcom, AMD, and TSMC</strong> to the original Magnificent 7. This reflects the market's recognition that AI infrastructure investment benefits a wider set of companies.
+      </p>
+      <h3>Why It Matters</h3>
+      <ul style="font-size:0.9rem; line-height:1.9; padding-left:18px;">
+        <li>Broadcom's $40B+ AI revenue approaches Meta's total AI spend</li>
+        <li>AMD's MI450 could break NVIDIA's near-monopoly in AI accelerators</li>
+        <li>TSMC manufactures virtually every advanced AI chip globally</li>
+        <li>The "Mag 10" framework legitimizes non-Mag 7 AI exposure</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>The AI Money Flow</h2>
+      <p style="font-size:0.92rem; margin-bottom:12px;">How $660B+ in hyperscaler AI CapEx flows through the NDX ex-Mag 7:</p>
+      <div class="gauge-container">
+        <div class="gauge-label">Custom ASICs</div>
+        <div class="gauge"><div class="gauge-fill" style="width:85%; background:linear-gradient(90deg, var(--accent), var(--yellow));"></div></div>
+        <div class="gauge-value" style="color:var(--accent);">AVGO, MRVL</div>
+      </div>
+      <div class="gauge-container">
+        <div class="gauge-label">AI Memory (HBM)</div>
+        <div class="gauge"><div class="gauge-fill" style="width:78%; background:linear-gradient(90deg, var(--blue), var(--accent));"></div></div>
+        <div class="gauge-value" style="color:var(--blue);">MU</div>
+      </div>
+      <div class="gauge-container">
+        <div class="gauge-label">GPU Accelerators</div>
+        <div class="gauge"><div class="gauge-fill" style="width:70%; background:linear-gradient(90deg, var(--green), var(--blue));"></div></div>
+        <div class="gauge-value" style="color:var(--green);">AMD</div>
+      </div>
+      <div class="gauge-container">
+        <div class="gauge-label">Chip IP / Architecture</div>
+        <div class="gauge"><div class="gauge-fill" style="width:65%; background:linear-gradient(90deg, var(--purple), var(--blue));"></div></div>
+        <div class="gauge-value" style="color:var(--purple);">ARM</div>
+      </div>
+      <div class="gauge-container">
+        <div class="gauge-label">Fab Equipment</div>
+        <div class="gauge"><div class="gauge-fill" style="width:60%; background:linear-gradient(90deg, var(--green), var(--accent));"></div></div>
+        <div class="gauge-value" style="color:var(--green);">AMAT, LRCX</div>
+      </div>
+      <div class="gauge-container">
+        <div class="gauge-label">AI Software Platforms</div>
+        <div class="gauge"><div class="gauge-fill" style="width:50%; background:linear-gradient(90deg, var(--purple), var(--accent));"></div></div>
+        <div class="gauge-value" style="color:var(--purple);">PLTR, NOW</div>
+      </div>
+      <div class="gauge-container">
+        <div class="gauge-label">AI Security</div>
+        <div class="gauge"><div class="gauge-fill" style="width:40%; background:linear-gradient(90deg, var(--red), var(--yellow));"></div></div>
+        <div class="gauge-value" style="color:var(--red);">CRWD, PANW</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Bottom Line</h2>
+    <p style="font-size:1rem; line-height:1.8;">
+      The Nasdaq 100 ex-Magnificent 7 is experiencing a <strong>dramatic sector rotation</strong>. AI infrastructure companies (Broadcom, Micron, Applied Materials) are thriving as the direct recipients of $660B+ in hyperscaler spending. Meanwhile, traditional SaaS companies face an existential "SaaSpocalypse" as AI agents threaten the per-seat model. The market is bifurcating into <strong>AI builders</strong> (semiconductors, platforms) and <strong>AI victims</strong> (legacy software). The biggest opportunities lie in companies that are either critical to AI infrastructure or successfully pivoting to AI-native business models. The biggest risks are extreme valuations (Palantir at 200x+ PE) and the possibility that hyperscaler capex peaks in 2026.
+    </p>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<div class="footer">
+  Nasdaq 100 ex-Magnificent 7 Report &bull; Generated February 25, 2026 &bull; Data sourced from public filings, analyst reports, and financial news.
+  <br>This report is for informational purposes only and does not constitute investment advice.
+</div>
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Colors
+const C = {
+  orange:'#e07c24', green:'#00d4aa', red:'#ff4d6a', blue:'#4a90d9',
+  purple:'#a78bfa', yellow:'#ffc107', cyan:'#22d3ee', teal:'#14b8a6',
+  muted:'#8b8fa3', border:'#2a2d38', text:'#e4e6ed'
+};
+
+// 1. Convergence chart
+new Chart(document.getElementById('convergenceChart'), {
+  type:'bar',
+  data:{
+    labels:['2023','2024','2025','2026E'],
+    datasets:[
+      { label:'Mag 7 EPS Growth', data:[55,35,28,20], backgroundColor:'rgba(255,77,106,0.4)', borderRadius:4 },
+      { label:'S&P 493 EPS Growth', data:[2,5,8,13], backgroundColor:'rgba(0,212,170,0.4)', borderRadius:4 },
+      { label:'NDX ex-Mag7 (est.)', data:[5,8,12,15], backgroundColor:'rgba(224,124,36,0.4)', borderRadius:4 }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ labels:{ color:C.text } } },
+    scales:{
+      y:{ grid:{color:C.border}, ticks:{color:C.muted, callback:v=>v+'%'} },
+      x:{ grid:{display:false}, ticks:{color:C.text} }
+    }
+  }
+});
+
+// 2. Sector heatmap bar
+new Chart(document.getElementById('sectorHeatChart'), {
+  type:'bar',
+  data:{
+    labels:['Semi Equipment','AI Memory','Custom Silicon','AI Platforms','Consumer Def.','Cybersecurity','SaaS/Software'],
+    datasets:[{
+      label:'YTD 2026 Return (est.)',
+      data:[11, 15, 5, 32, -3, -21, -28],
+      backgroundColor: [11,15,5,32,-3,-21,-28].map(v=> v>=0 ? 'rgba(0,212,170,0.5)':'rgba(255,77,106,0.5)'),
+      borderRadius:6, borderSkipped:false
+    }]
+  },
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{
+      x:{ grid:{color:C.border}, ticks:{color:C.muted, callback:v=>v+'%'} },
+      y:{ grid:{display:false}, ticks:{color:C.text, font:{size:11}} }
+    }
+  }
+});
+
+// 3. Performance comparison (top 15 vs Mag7 avg)
+new Chart(document.getElementById('perfCompareChart'), {
+  type:'bar',
+  data:{
+    labels:['PLTR','MU','AVGO','AMAT','ARM','MRVL','COST','NFLX','AMD','BKNG','PANW','CRWD','CRM','ADBE','NOW','Mag7 Avg'],
+    datasets:[{
+      label:'6-Month Return (%)',
+      data:[85, 40, 28, 18, 15, 10, 12, 5, -8, -12, -15, -18, -20, -25, -30, 6.9],
+      backgroundColor: function() {
+        const d = [85,40,28,18,15,10,12,5,-8,-12,-15,-18,-20,-25,-30, 6.9];
+        return d.map((v,i) => {
+          if(i===15) return 'rgba(167,139,250,0.6)';
+          return v>=0 ? 'rgba(0,212,170,0.5)':'rgba(255,77,106,0.5)';
+        });
+      }(),
+      borderRadius:5, borderSkipped:false
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx=>ctx.parsed.y+'%' } } },
+    scales:{
+      y:{ grid:{color:C.border}, ticks:{color:C.muted, callback:v=>v+'%'} },
+      x:{ grid:{display:false}, ticks:{color:C.text, font:{weight:'bold', size:10}} }
+    }
+  }
+});
+
+// 4. Sector bar chart (full)
+new Chart(document.getElementById('sectorBarChart'), {
+  type:'bar',
+  data:{
+    labels:['PLTR','MU','AMAT','AVGO','COST','TMUS','ARM','MRVL','AMD','NFLX','BKNG','PANW','CRWD','CRM','ADBE','NOW'],
+    datasets:[{
+      label:'YTD 2026 (%)',
+      data:[32, 15, 11, -5, 3, -2, -8, -12, -15, -12, -17, -20, -22, -25, -32, -34],
+      backgroundColor:[32,15,11,-5,3,-2,-8,-12,-15,-12,-17,-20,-22,-25,-32,-34].map(v=>v>=0?'rgba(0,212,170,0.5)':'rgba(255,77,106,0.45)'),
+      borderRadius:5, borderSkipped:false
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{label:ctx=>ctx.parsed.y+'%'} } },
+    scales:{
+      y:{ grid:{color:C.border}, ticks:{color:C.muted, callback:v=>v+'%'} },
+      x:{ grid:{display:false}, ticks:{color:C.text, font:{weight:'bold', size:10}} }
+    }
+  }
+});
+
+// 5. AI revenue pie
+new Chart(document.getElementById('aiRevChart'), {
+  type:'doughnut',
+  data:{
+    labels:['AVGO AI ($40B+)','MU HBM (~$30B)','AMD AI ($14B)','PLTR ($7.3B)','MRVL ($2.5B+)','CRM Agentforce ($1.4B)','NOW AI ($1B target)','Others'],
+    datasets:[{
+      data:[40,30,14,7.3,2.5,1.4,1,5],
+      backgroundColor:[C.orange, C.blue, C.green, C.purple, C.teal, C.cyan, C.yellow, C.muted],
+      borderColor:'#181b24', borderWidth:3
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{ position:'right', labels:{color:C.text, padding:10, font:{size:11}} }
+    }
+  }
+});
+
+// 6. Upside chart
+new Chart(document.getElementById('upsideChart'), {
+  type:'bar',
+  data:{
+    labels:['MU','AMD','AMAT','NOW','ADBE','PANW','CRWD','BKNG','MRVL','AVGO','ARM','CRM','TMUS','COST','PLTR'],
+    datasets:[{
+      label:'Upside to Avg Target (%)',
+      data:[169,153,108,88,56,53,49,47,37,36,29,23,14,2,-2],
+      backgroundColor:[169,153,108,88,56,53,49,47,37,36,29,23,14,2,-2].map(v=>v>=30?'rgba(0,212,170,0.5)':v>=0?'rgba(224,124,36,0.4)':'rgba(255,77,106,0.4)'),
+      borderRadius:5, borderSkipped:false
+    }]
+  },
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>'+'+ctx.parsed.x+'%'}} },
+    scales:{
+      x:{ grid:{color:C.border}, ticks:{color:C.muted, callback:v=>v+'%'} },
+      y:{ grid:{display:false}, ticks:{color:C.text, font:{weight:'bold', size:11}} }
+    }
+  }
+});
+
+// 7. Revenue growth comparison
+new Chart(document.getElementById('revGrowthChart'), {
+  type:'bar',
+  data:{
+    labels:['MU','PLTR','AVGO','AMD','MRVL','ARM','CRWD','NOW','PANW','INTU','NFLX','BKNG','COST','TMUS'],
+    datasets:[{
+      label:'2026 Revenue Growth (%)',
+      data:[98, 61, 40, 30, 25, 20, 20, 20, 15, 11, 12, 10, 8, 7],
+      backgroundColor: 'rgba(224,124,36,0.45)',
+      borderRadius:5
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>ctx.parsed.y+'%'}} },
+    scales:{
+      y:{ grid:{color:C.border}, ticks:{color:C.muted, callback:v=>v+'%'} },
+      x:{ grid:{display:false}, ticks:{color:C.text, font:{weight:'bold', size:10}} }
+    }
+  }
+});
+
+// 8. AI tier scatter/bubble
+new Chart(document.getElementById('aiTierChart'), {
+  type:'bubble',
+  data:{
+    datasets:[
+      {
+        label:'Tier 1: Core AI Infra',
+        data:[
+          {x:95,y:40,r:22, company:'AVGO'},
+          {x:90,y:98,r:18, company:'MU'},
+          {x:85,y:25,r:14, company:'MRVL'},
+          {x:80,y:30,r:16, company:'AMD'},
+          {x:75,y:20,r:15, company:'ARM'},
+          {x:70,y:15,r:16, company:'AMAT'}
+        ],
+        backgroundColor:'rgba(224,124,36,0.35)',
+        borderColor:C.orange, borderWidth:2
+      },
+      {
+        label:'Tier 2: AI Platforms',
+        data:[
+          {x:92,y:61,r:20, company:'PLTR'},
+          {x:65,y:20,r:14, company:'NOW'},
+          {x:55,y:10,r:15, company:'CRM'}
+        ],
+        backgroundColor:'rgba(74,144,217,0.35)',
+        borderColor:C.blue, borderWidth:2
+      },
+      {
+        label:'Tier 3: AI-Enhanced',
+        data:[
+          {x:50,y:10,r:14, company:'ADBE'},
+          {x:55,y:20,r:13, company:'CRWD'},
+          {x:50,y:15,r:12, company:'PANW'},
+          {x:40,y:11,r:12, company:'INTU'}
+        ],
+        backgroundColor:'rgba(167,139,250,0.35)',
+        borderColor:C.purple, borderWidth:2
+      },
+      {
+        label:'Tier 4: AI-Adjacent',
+        data:[
+          {x:15,y:12,r:16, company:'NFLX'},
+          {x:20,y:10,r:14, company:'BKNG'},
+          {x:10,y:8,r:18, company:'COST'},
+          {x:25,y:7,r:13, company:'TMUS'}
+        ],
+        backgroundColor:'rgba(0,212,170,0.3)',
+        borderColor:C.green, borderWidth:2
+      }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{ labels:{color:C.text} },
+      tooltip:{
+        callbacks:{
+          label: ctx => {
+            const d = ctx.raw;
+            return d.company + ' — AI Exposure: ' + d.x + '%, Rev Growth: ' + d.y + '%';
+          }
+        }
+      }
+    },
+    scales:{
+      x:{ title:{display:true, text:'AI Revenue Exposure (%)', color:C.muted}, grid:{color:C.border}, ticks:{color:C.muted}, min:0, max:100 },
+      y:{ title:{display:true, text:'2026 Revenue Growth (%)', color:C.muted}, grid:{color:C.border}, ticks:{color:C.muted, callback:v=>v+'%'}, min:0, max:110 }
+    }
+  }
+});
+
+// 9. AI Revenue bar
+new Chart(document.getElementById('aiRevBarChart'), {
+  type:'bar',
+  data:{
+    labels:['AVGO','MU','AMD','PLTR','MRVL','CRM','NOW','AMAT','CRWD','ARM'],
+    datasets:[{
+      label:'2026 AI Revenue ($B)',
+      data:[40, 30, 14, 7.3, 2.5, 1.4, 1.0, 3.0, 0.8, 1.5],
+      backgroundColor:[
+        C.orange, C.blue, C.green, C.purple, C.teal,
+        C.cyan, C.yellow, C.orange+'88', C.red+'88', C.purple+'88'
+      ],
+      borderRadius:6
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>'$'+ctx.parsed.y+'B'}} },
+    scales:{
+      y:{ grid:{color:C.border}, ticks:{color:C.muted, callback:v=>'$'+v+'B'} },
+      x:{ grid:{display:false}, ticks:{color:C.text, font:{weight:'bold'}} }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
